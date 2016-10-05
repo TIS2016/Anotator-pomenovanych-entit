@@ -1,0 +1,19 @@
+5.10.2016	Glatzner, Klein, Szendy
+Riesene organizacne veci.
+Vysvetlenie temy cviciacemu.
+
+- katalog poziadaviek: najskor poslat cviciacemu az ked dostaneme spatnu vazbu a zapracujeme ju, potom
+poslat zadavatelovi, pripadne sa s nim rovno stretnut a malo by to byt hotove v utorok 11.10.
+- co najskor dokoncit Ganttov diagram a poslat ho na mailing list podla zadania cvicenia
+- kto neurobil este 1. cvicenie - spolocne realizovat co najskor a poslat riesenie rovnako ako v predch. bode
+- zacat pripravovat pouzivatelske rozhranie (kto?)
+- vsetky dokumenty ktore su hotove nahravat do branchu Dokumentacia
+    (git checkout nazov-branchu)
+- vsetky commity treba ked su hotove poslat na server, t.j. vyrabaju sa vzdy v novom branchi
+    (git branch meno-noveho-branch)
+- vsetko ide cez pull request - priamo na github.com
+- potom si zmeny niekto pozrie, pripadne okomentuje a da este prerobit a nakoniec mergne cez command line
+   (git bash)
+
+
+mail - rozdelenie roly. .posledne dve role spolu
