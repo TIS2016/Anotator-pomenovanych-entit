@@ -1,0 +1,21 @@
+14.10.2016 Stretnutie bez cviciaceho
+	- Glatzner, Klein, Kocan, Szendy
+
+Rozdelenie uloh -> 
+	Glatzner	-	implementacia
+	Klein	 	- 	komunikacia
+	Kocan		-	dokumentacia
+	Szendy		- 	manazment	
+
+Rozdelenie prac na nasledujuci tyzden:
+		Glatzner -	Entitno-relacny Diagram
+		Klein -		premyslat nad GUI, dokoncit/opravit katalog poziadaviek
+		Kocan -		Sekvencny Diagram
+		Szendy -	Use-case, stavovy Diagram
+
+-preberanie pripomienok cviciaceho ku katalogu poziadaviek
+-ujasnenie funkcii programu
+dohodnutie komunikacneho programu  -> Skype
+--treba vybrat najvhodnejsiu technologiu na vytvorenie programu - Aplikacia, Server, Databaza
+
+		
