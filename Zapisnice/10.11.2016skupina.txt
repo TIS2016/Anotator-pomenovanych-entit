@@ -1,0 +1,42 @@
+11.10.2016
+Klein, Szendy
+
+- spracovanie funkcii programu pre katalog poziadaviek :
+
+	
+Skupiny entit 	
+	
+Nacitat text do 	databazy….
+	
+Vyznacovanie 	podla farieb
+	
+Realtime
+	
+Pouzivatelia – 	admin,editor, annotator, reader, guest
+	
+Referencie na 	entity – moznost zameny zameno za entitu
+	
+Komentare 	
+	
+Strom entit – 	max 3 urovne
+	
+Export textu
+Bonus
+	
+Moznost 	komentovat rozny text 	
+	
+Moznost vyberu 	zvyraznenych entit
+	
+Moznost pridat 	URL ku exportu
+	
+Offline verzia 	
+	
+Rozdelenie 	dokumentu na strany
+
+Root – mazat komentare, entity, pridavat odoberat prava pouzivatelom, Upload dokumentu,
+	maska prav pouzivatelov,
+
+Session , pristup, dokumenty – prazdny, thread,
+
+
+
