@@ -1,0 +1,16 @@
+21.10.2016 Stretnutie s cviciacim
+Glatzner, Klein, Kocan, Szendy
+
+Prerozpravanie prace za uplynuly tyzden...
+->
+		Klein - GUI poslat cviciacemu, az potom zadavatelovi
+		Kocan - kvoli nepritomnosti - viac prace
+		Glatzner - ovaly= atributy..program na UML diag. - Draw.io
+		Szendy - Use-case oval, bez sipok, nakreslit v draw.io, use-case bez akcii, cinnosti = funkcionalita (Vytvaranie skupiny), vyuzit vztah medzi dvomi osobami - Extends, includes ist do jedalne INCLUDES - vybrat jedlo
+
+
+GUI- napisat popis kto ake okno vidi, popisat na ake kliknutie sa okno zobrazi, uprava login/connection+default login server..., 
+osetrit male vypadky pripojenia
+Log - zaznamenavanie na serveri -> poslanie uzivatelom na request
+spravit Datovy Model- Php my admin - design tvorba modelu aj databazy 
+spravit komponentovy diagrama (hruba struktura aplikacie); triedny diagram- dolezite triedy/metody
