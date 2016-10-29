@@ -1,0 +1,9 @@
+28.10.2016
+Stretnutie skupiny -- pritomny: Juraj Kocan, Michal Klein
+
+--dohodli sme sa, ze klient bude v JAVE
+--rozdelenie prace na dalsi tyzden:
+1) dokoncit diagramy
+2) Kocan -- dekompozicia
+3) Klein -- datovy model
+4) Szendy a Glatzner -- triedny diagram
