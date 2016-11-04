@@ -1,0 +1,26 @@
+4.11.2016
+Klein, Szendy
+
+uz by sa mohlo zacat programovat
+
+ERD- Treba zapracovat pripomienky
+Use-case - uprava
+State- Uprava + anotujuci pouzivatel
+Sequence - preklepy, skonci uzivatelovi kontext vyplnenim formulara?, preco sa prerusi aplikacii kontext po odoslani udajov na server, co sa udeje ked aplikacia dostane potvrdenie od servera- uzivatel sa nic nedozvie ?, treba odstranit a nechat jednu verziu diagramu
+Dekompozicia - Tiez UML diagram, v strede nejake "r", nema byt vyjadrena postupnost akcii, ale z coho sa server sklada a ako spolocne interaguju, napr Komponent Aplikacia, Sprava skupin, Anotovanie, Export, riesenie konfiguracnych suborov; 
+data model - Mozno pridat aj komentar, aj description na anotaciu/komentar; Pridat nick, ?mail, URL, farba pridat typom, odobrat z referencii, zvacsit size meno dokumentu, 
+class diag.- nemusia byt vsetky so sipkami, editor .....
+v pripade zmien na konci prekreslit class diagram podla zmien, alebo napisat k nemu zmeny
+
+class vygenerovat priamo z prostredia
+trieda java net socket - poslany od cviciaceho.
+Cviciaci vytvori db na kempelene.
+
+
+treba spravit analyzu technologii- pomenovane a zdovodnene, ktore technologie sa pouziju
+vyrobit dokument navrh, kde budu vsetky diagramy + komentar ku kazdemu(apson jedna veta)
+
+
+
+Dalsie stretnutie o dva tyzdne, dovtedy hotove Cely Navrh- vratane testovacich scenarov- maju pokryt aspon vsetky zakladne veci z katalogu poziadaviek; Zacat Programovat, Vsetko by malo byt jasne a kompletne navrhnute ako sa co bude robit -- Opravene diagramy, pekna dekompozicia, rozdelenie na triedy + zaciatok kodovania. 
+Do dalsieho stretnutia by malo byt nieco spustitelne na GitHube. Napr komunikacia servera.
