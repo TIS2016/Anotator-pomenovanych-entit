@@ -1,0 +1,10 @@
+4.11.2016 skupina
+Klein, Kocan, Szendy
+
+do dalsieho stretnutia  : Zapracovanie poziadaviek cviciaceho.
+Glatzner- uprava ERD, finalne rozhodnutie technologie pre databazu/server
+Klein - testovacie scenare, uprava datoveho modelu
+Kocan - upravi sekvencny diag +  dekompoziciu
+Szendy - uprava use-case, state, class diag.
+
+hladanie dalsich technologii
