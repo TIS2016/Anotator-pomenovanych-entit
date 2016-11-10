@@ -1,0 +1,11 @@
+.keyword {
+    -rtfx-background-color: red;
+}
+
+.paren {
+    -rtfx-background-color: green;
+}
+
+.string {
+    -rtfx-background-color: yellow;
+ }
