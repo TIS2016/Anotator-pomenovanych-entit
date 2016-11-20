@@ -1,0 +1,10 @@
+13.11.2016
+Glatzner, Klein, Kocan, Szendy
+
+Diskusia o dalsom postupe riesenia projektu, hlavne programovania hlavnych casti a komunikacia: program - server / java - python
+
+Prerozdelenie prace programovania : 
+Glatzner- server
+Klein- praca na registracii, prihlaseni, ...
+Kocan- skupiny
+Szendy- anotacie
