@@ -1,0 +1,2 @@
+{'Username': 'majo', 'Password': '123', 'Admin': True}
+{'Username': 'test', 'Password': '456', 'Admin': False}
