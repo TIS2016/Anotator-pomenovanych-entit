@@ -29,13 +29,13 @@ public class Main extends Application {
             AnnotationDialog annotDialog = new AnnotationDialog(primaryStage);
             annotDialog.showAndWait();
         });
-        Button annotAddTest = new Button("Add Annotation test");
-        annotAddTest.setOnAction(event -> {
-            AnnotationDialog annotDialog = new AnnotationDialog(primaryStage);
-            annotDialog.showAndWait();
+        Button createCategoryTest = new Button("Add Annotation test");
+        createCategoryTest.setOnAction(event -> {
+            CreateCategoryDialog createCattegoryDialog = new CreateCategoryDialog(primaryStage);
+            createCattegoryDialog.showAndWait();
         });
         Scene scene = new Scene(new Pane(new VBox(5,
-        		connectTest,annotationTest,annotAddTest
+        		connectTest,annotationTest,createCategoryTest
         		)), 400, 400);
         primaryStage.setTitle("Testing");
         primaryStage.setScene(scene);
