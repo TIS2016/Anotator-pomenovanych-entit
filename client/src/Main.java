@@ -2,6 +2,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 
@@ -23,7 +24,19 @@ public class Main extends Application {
             ConnectionDialog conDialog = new ConnectionDialog(primaryStage);
             conDialog.showAndWait();
         });
-        Scene scene = new Scene(new Pane(connectTest), 400, 400);
+        Button annotationTest = new Button("Annotation test");
+        annotationTest.setOnAction(event -> {
+            AnnotationDialog annotDialog = new AnnotationDialog(primaryStage);
+            annotDialog.showAndWait();
+        });
+        Button annotAddTest = new Button("Add Annotation test");
+        annotAddTest.setOnAction(event -> {
+            AnnotationDialog annotDialog = new AnnotationDialog(primaryStage);
+            annotDialog.showAndWait();
+        });
+        Scene scene = new Scene(new Pane(new VBox(5,
+        		connectTest,annotationTest,annotAddTest
+        		)), 400, 400);
         primaryStage.setTitle("Testing");
         primaryStage.setScene(scene);
         primaryStage.show();
