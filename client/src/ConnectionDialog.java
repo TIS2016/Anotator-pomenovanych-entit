@@ -28,11 +28,8 @@ public class ConnectionDialog extends Dialog {
             hostName.textProperty().addListener((observable, oldValue, newValue) -> {
                 invalidHost.set(newValue.trim().isEmpty());
             });
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
+            Platform.runLater(() -> {
                     hostName.requestFocus();
-                }
             });
 
             TextField portNumber = new TextField();
@@ -45,10 +42,12 @@ public class ConnectionDialog extends Dialog {
                 }
             });
 
-            Label hostLabel = new Label("Host:");
+            Label hostLabel = new Label("_Host:");
+            hostLabel.setMnemonicParsing(true);
             hostLabel.setLabelFor(hostName);
 
-            Label portLabel = new Label("Port:");
+            Label portLabel = new Label("_Port:");
+            portLabel.setMnemonicParsing(true);
             portLabel.setLabelFor(portNumber);
 
             Alert connectionError = new Alert(Alert.AlertType.ERROR);
@@ -61,20 +60,17 @@ public class ConnectionDialog extends Dialog {
 
             connectBtn.disableProperty().bind(invalidPort.or(invalidHost));
             connectBtn.addEventFilter(ActionEvent.ACTION, event -> {
-                LoginDialog loginDialog = new LoginDialog(conDialog.getOwner());
-                loginDialog.showAndWait(); //delete this
                 try {
                     Socket socket = new Socket(hostName.getText().trim(),
                             Integer.parseInt(portNumber.getText().trim()));
-                    /*
+                    LoginDialog loginDialog = new LoginDialog(conDialog.getOwner());
                     boolean ok = loginDialog.showAndWait().orElse(false); //uncomment this
                     if (!ok) { //consume this event if we pressed Cancel in loginDialog
                         event.consume();
                     }
-                     */
                 } catch (IOException e) {
                     connectionError.setHeaderText("CAN'T CREATE SOCKET,");
-                    connectionError.setContentText("see source file");
+                    connectionError.setContentText("see source file, TODO: handle me");
                     connectionError.showAndWait();
                     event.consume();
                 }
@@ -93,7 +89,7 @@ public class ConnectionDialog extends Dialog {
     public ConnectionDialog(Window owner) {
         this.initOwner(owner);
         this.setResizable(false);
-        this.setTitle("Connection");
+        this.setTitle("New connection");
         this.getDialogPane().setContent(new ConnectionPane(this));
     }
 }

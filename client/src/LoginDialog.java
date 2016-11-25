@@ -7,10 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Window;
-import javafx.util.Callback;
 
-
-import java.net.Socket;
 
 /**
  * Created by michal on 11/17/16.
@@ -86,7 +83,6 @@ public class LoginDialog extends Dialog<Boolean> {
 
             this.setContent(root);
         }
-
     }
 
     private class RegTab extends Tab {
@@ -134,7 +130,6 @@ public class LoginDialog extends Dialog<Boolean> {
             email.textProperty().addListener((ov, oldV, newV) -> {
                 emailNotOk.set(newV.trim().isEmpty());
             });
-
 
             CheckBox showPassword = new CheckBox("Unmask");
             showPassword.setFocusTraversable(true);
@@ -193,7 +188,6 @@ public class LoginDialog extends Dialog<Boolean> {
             root.add(statusLabel, 1, 6);
             this.setContent(root);
         }
-
     }
 
     public LoginDialog(Window owner) {
@@ -218,20 +212,15 @@ public class LoginDialog extends Dialog<Boolean> {
             if (true) { //we failed to log in or register, consume this event
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("ERROR");
-                alert.setHeaderText("SEND DATA TO SERVER...");
+                alert.setHeaderText("TODO: send data to server...");
                 alert.showAndWait();
                 event.consume();
             }
         });
 
-        this.setResultConverter(new Callback<ButtonType, Boolean>() {
-
-            @Override
-            public Boolean call(ButtonType buttonType) {
-                return buttonType == okButton;
-            }
+        this.setResultConverter(buttonType -> {
+            return buttonType == okButton;
         });
-
 
         loginTab.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
