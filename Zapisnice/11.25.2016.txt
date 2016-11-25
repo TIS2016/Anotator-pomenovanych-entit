@@ -1,0 +1,13 @@
+25.11.2016
+Klein, Szendy
+
+
+- podla cviciaceho je najlepsim riesenim na ukladanie dat databaza
+
+- vytvorena databaza na serveri kempelen - pristupove udaje poslane na mail.
+
+- ERD - Projekt -> Obsahuje ->(...) zmenit na entity => odstranit Obsahuje
+
+- zvazit kuskovanie dokumentu
+
+- Dalsi tyzden nieje stretnutie !!! 
