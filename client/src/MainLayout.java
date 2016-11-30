@@ -1,4 +1,4 @@
-import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
@@ -8,8 +8,12 @@ import javafx.stage.Popup;
 import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.*;
+import org.fxmisc.wellbehaved.event.Nodes;
 
 import java.time.Duration;
+
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
+import static org.fxmisc.wellbehaved.event.InputMap.consume;
 
 /**
  * Created by michal on 11/23/16.
@@ -22,8 +26,8 @@ public class MainLayout extends VBox {
         SplitPane masterSplitPane = new SplitPane();
         SplitPane slaveSplitPane = new SplitPane();
 
-        MainMenuBar mainMenuBar = new MainMenuBar(primaryStage, slaveSplitPane);
-        this.setVgrow(mainMenuBar, Priority.ALWAYS);
+        MainMenuBar mainMenuBar = new MainMenuBar(primaryStage, masterSplitPane, slaveSplitPane);
+        VBox.setVgrow(mainMenuBar, Priority.ALWAYS);
 
         StyleClassedTextArea textArea = new StyleClassedTextArea();
         textArea.insertText(0, "Hover for 1 sec over the text or" +
@@ -65,15 +69,33 @@ public class MainLayout extends VBox {
         logArea.setEditable(false);
         textArea.setShowCaret(StyledTextArea.CaretVisibility.ON);
 
-        mainArea.getChildren().addAll(scrollPane);
+        mainArea.getChildren().add(scrollPane);
 
         slaveSplitPane.setOrientation(Orientation.VERTICAL);
         slaveSplitPane.setDividerPositions(0.8);
         slaveSplitPane.getItems().addAll(mainArea, logArea);
 
+        VBox treeBox = new VBox();
+
+        TextField treeSearch = new TextField();
+        treeSearch.setPromptText("Search");
+
+        AnnotationTree annotationTree = new AnnotationTree(primaryStage);
+        TreeObjectItem<TreeObject<?>> rootItem = (TreeObjectItem<TreeObject<?>>) annotationTree.getRoot();
+        rootItem.predicateProperty().bind(Bindings.createObjectBinding(() -> {
+            if (treeSearch.getText() == null || treeSearch.getText().trim().isEmpty()) {
+                return null;
+            }
+            return TreePredicate.create(child -> child.getName().contains(treeSearch.getText()));
+        }, treeSearch.textProperty()));
+
+        VBox.setVgrow(annotationTree, Priority.ALWAYS);
+
+        treeBox.getChildren().addAll(treeSearch, annotationTree);
+
         masterSplitPane.setOrientation(Orientation.HORIZONTAL);
         masterSplitPane.setDividerPositions(0.7);
-        masterSplitPane.getItems().addAll(slaveSplitPane, new Pane(new Label("TODO: TreeView"))); //TODO
+        masterSplitPane.getItems().addAll(slaveSplitPane, treeBox);
 
         ContextMenu contextMenu = new ContextMenu();
 
@@ -84,7 +106,8 @@ public class MainLayout extends VBox {
             }
             keyEvent.consume();
         });
-        contextMenu.getItems().setAll(new MenuItem("Foo"), new MenuItem("Bar"), new MenuItem("Baz")); //TODO: replace with real context menu
+        contextMenu.getItems().setAll(new MenuItem("Update"), new MenuItem("Delete"),
+                new SeparatorMenuItem(), new MenuItem("Comments")); //TODO: replace with real context menu
 
         textArea.addEventHandler(MouseEvent.MOUSE_CLICKED, me -> {
             System.out.println("Click in text area -- CONTEXT MENU TEST");
@@ -101,17 +124,15 @@ public class MainLayout extends VBox {
             me.consume();
         });
 
-        KeyCodeCombination searchCombination = new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN);
-        textArea.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
-            if (searchCombination.match(keyEvent)) {
-                System.out.println("CTRL-S SEARCH INVOKED -- BIND ME");
-            }
-            keyEvent.consume();
-        });
 
-        this.heightProperty().addListener(((observable, oldValue, newValue) -> {
-            masterSplitPane.setPrefHeight(newValue.doubleValue());
+        KeyCodeCombination searchCombination = new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN);
+        Nodes.addInputMap(textArea, consume(keyPressed(searchCombination), keyEvent -> {
+            System.out.println("CTRL-F SEARCH INVOKED -- BIND ME");
         }));
+
+        this.heightProperty().addListener((observable, oldValue, newValue) -> {
+            masterSplitPane.setPrefHeight(newValue.doubleValue());
+        });
 
         this.getChildren().addAll(mainMenuBar, masterSplitPane);
     }

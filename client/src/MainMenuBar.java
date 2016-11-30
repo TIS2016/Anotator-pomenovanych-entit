@@ -1,5 +1,6 @@
 import javafx.application.Platform;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
@@ -7,10 +8,7 @@ import javafx.stage.Stage;
  */
 public class MainMenuBar extends MenuBar {
 
-    private double lastTabDividerPosition = 0;
-
-
-    public MainMenuBar(Stage primaryStage, SplitPane splitPane) {
+    public MainMenuBar(Stage primaryStage, SplitPane masterSplitPane, SplitPane slaveSplitPane) {
         final Menu fileMenu = new Menu("_File");
 
         final MenuItem fileExport = new MenuItem("_Export");
@@ -57,14 +55,12 @@ public class MainMenuBar extends MenuBar {
 
         final MenuItem sessNew = new MenuItem("_New session");
         sessNew.setOnAction(actionEvent -> {
-        	GroupCreateDialog createGroupDialog= new GroupCreateDialog(primaryStage);
-        	createGroupDialog.showAndWait();
-        	actionEvent.consume();
+            System.out.println("NEW SESSION -- BIND ME");
+            actionEvent.consume();
         });
         final MenuItem sessJoin = new MenuItem("_Join session");
         sessJoin.setOnAction(actionEvent -> {
-        	GroupsDialog groupsDialog = new GroupsDialog(primaryStage);
-        	groupsDialog.showAndWait();
+            System.out.println("SESSION JOIN -- BIND ME");
             actionEvent.consume();
         });
         final MenuItem sessActive = new MenuItem("_Active session");
@@ -111,12 +107,13 @@ public class MainMenuBar extends MenuBar {
 
         logToggleGroup.selectToggle(logDisplayTab);
         logToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            //TODO: rewrite using listeners on logDisplay....
             if (oldValue != null) {
                 if (oldValue == logDisplayTab) {
-                    TextArea toRemove = (TextArea) splitPane.getItems().get(1);
+                    TextArea toRemove = (TextArea) slaveSplitPane.getItems().get(1);
                     logDisplayTab.setUserData(toRemove);
-                    lastTabDividerPosition = splitPane.getDividerPositions()[0];
-                    splitPane.getItems().remove(toRemove);
+                    //lastTabDividerPosition = slaveSplitPane.getDividerPositions()[0];
+                    slaveSplitPane.getItems().remove(toRemove);
                 } else if (oldValue == logDisplayWindow) {
                     //TODO
                 } else {
@@ -125,8 +122,8 @@ public class MainMenuBar extends MenuBar {
             }
             if (newValue != null) {
                 if (newValue == logDisplayTab) {
-                    splitPane.getItems().add((TextArea) logDisplayTab.getUserData());
-                    splitPane.setDividerPositions(lastTabDividerPosition);
+                    slaveSplitPane.getItems().add((TextArea) logDisplayTab.getUserData());
+                    slaveSplitPane.setDividerPosition(0, 0.8);
                 } else if (oldValue == logDisplayWindow) {
                     //TODO
                 } else {
@@ -157,7 +154,34 @@ public class MainMenuBar extends MenuBar {
             actionEvent.consume();
         });
 
-        anotMenu.getItems().setAll(anotNew, anotTest);
+        final Menu treeDisplayOptions = new Menu("_Tree position");
+
+        final ToggleGroup treeToggleGroup = new ToggleGroup();
+
+        final RadioMenuItem treeDisplayLeft = new RadioMenuItem("L_eft");
+        treeDisplayLeft.setToggleGroup(treeToggleGroup);
+
+        final RadioMenuItem treeDisplayRight = new RadioMenuItem("_Right");
+        treeDisplayRight.setToggleGroup(treeToggleGroup);
+
+        treeDisplayOptions.getItems().addAll(treeDisplayLeft, treeDisplayRight);
+        treeToggleGroup.selectToggle(treeDisplayRight);
+
+        treeDisplayLeft.setOnAction(actionEvent -> {
+            VBox treeBox = (VBox) masterSplitPane.getItems().get(1);
+            masterSplitPane.getItems().remove(treeBox);
+            masterSplitPane.getItems().add(0, treeBox);
+            masterSplitPane.setDividerPosition(0, 0.3);
+        });
+
+        treeDisplayRight.setOnAction(actionEvent -> {
+            VBox treeBox = (VBox) masterSplitPane.getItems().get(0);
+            masterSplitPane.getItems().remove(treeBox);
+            masterSplitPane.getItems().add(treeBox);
+            masterSplitPane.setDividerPosition(0, 0.7);
+        });
+
+        anotMenu.getItems().setAll(anotNew, anotTest, new SeparatorMenuItem(), treeDisplayOptions);
 
         this.getMenus().setAll(fileMenu, connMenu, sessionMenu, anotMenu, logMenu);
     }
