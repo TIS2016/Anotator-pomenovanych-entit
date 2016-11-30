@@ -26,6 +26,10 @@ public abstract class TreeObject<T extends TreeObject<?>> {
         });
     }
 
+    public final SimpleStringProperty nameProperty() {
+        return this.nameProperty;
+    }
+
     public final void setName(String name) {
         this.nameProperty.set(name);
     }
@@ -34,12 +38,16 @@ public abstract class TreeObject<T extends TreeObject<?>> {
         return this.nameProperty.get();
     }
 
-    public final SimpleStringProperty nameProperty() {
-        return this.nameProperty;
-    }
-
     public final SimpleObjectProperty<TreeObject<?>> parentProperty() {
         return this.parentProperty;
+    }
+
+    public final void setParent(TreeObject<?> parent) {
+        this.parentProperty.set(parent);
+    }
+
+    public final TreeObject<?> getParent() {
+        return this.parentProperty.get();
     }
 
     protected void add(T item) {
@@ -52,5 +60,12 @@ public abstract class TreeObject<T extends TreeObject<?>> {
 
     protected ObservableList<T> getChildren() {
         return children;
+    }
+
+    protected void clearChildren() {
+        this.getChildren().forEach(child -> {
+            child.clearChildren();
+        });
+        this.getChildren().clear();
     }
 }

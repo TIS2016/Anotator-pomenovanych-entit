@@ -34,9 +34,7 @@ public class TreeObjectCell<T extends TreeObject<?>> extends CheckBoxTreeCell<T>
             tmp.filtered(item -> item != at.getRoot()).forEach(item -> { //item != null
                 TreeObject<?> value = item.getValue();
                 item.getParent().getValue().getChildren().remove(value);
-                if (value instanceof CategoryObject) {
-                    ((CategoryObject) value).deleteChildrenRecursive();
-                }
+                value.clearChildren();
             });
             at.getSelectionModel().clearSelection();
             actionEvent.consume();
@@ -48,8 +46,10 @@ public class TreeObjectCell<T extends TreeObject<?>> extends CheckBoxTreeCell<T>
             CategoryObject dummyText = new CategoryObject("dummy category");
             if (item instanceof CategoryObject)
                 ((CategoryObject) item).getChildren().add(dummyText);
+            else if (item instanceof AnnotationObject)
+                ((CategoryObject) item.getParent()).getChildren().add(dummyText);
             else
-                ((CategoryObject) item.parentProperty().get()).getChildren().add(dummyText);
+                ((CategoryObject) item.getParent().getParent()).getChildren().add(dummyText);
             at.getSelectionModel().clearSelection();
             actionEvent.consume();
         });
@@ -58,8 +58,8 @@ public class TreeObjectCell<T extends TreeObject<?>> extends CheckBoxTreeCell<T>
             return at.getRoot() != this.getTreeItem();
         }, this.selectedProperty(), at.rootProperty()));
 
-        updateMenuItem.visibleProperty().bind(Bindings.createBooleanBinding(() -> {
-            return at.getRoot() != this.getTreeItem();
+        updateMenuItem.visibleProperty().bind(Bindings.createBooleanBinding(() -> { //we should not update references directly
+            return at.getRoot() != this.getTreeItem() && !(this.getItem() instanceof ReferenceObject);
         }, this.selectedProperty(), at.rootProperty()));
 
         this.onMouseClickedProperty().bind(Bindings.createObjectBinding(() -> {
@@ -79,8 +79,8 @@ public class TreeObjectCell<T extends TreeObject<?>> extends CheckBoxTreeCell<T>
     public void updateItem(T item, boolean empty) {
         super.updateItem(item, empty);
         this.setText(empty || item == null ? "" : item.getName());
-        if (item instanceof AnnotationObject) {
-            this.setGraphic(null); //no checkbox for annotations
+        if (item instanceof ReferenceObject) {
+            this.setGraphic(null); //no checkbox for references
         }
     }
 }

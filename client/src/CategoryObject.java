@@ -7,11 +7,4 @@ public class CategoryObject extends TreeObject<TreeObject<?>> {
         super(name);
         //TODO: add more attributes
     }
-
-    public final void deleteChildrenRecursive() {
-        this.getChildren().stream().filter(child -> child instanceof CategoryObject).forEach(child -> {
-            ((CategoryObject) child).deleteChildrenRecursive();
-        });
-        this.getChildren().clear();
-    }
 }

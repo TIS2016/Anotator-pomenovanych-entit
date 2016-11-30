@@ -43,14 +43,16 @@ public class AnnotationTree extends TreeView<TreeObject<?>> {
         this.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         //test
-        CategoryObject root = new CategoryObject("Press space to test");
-        CategoryObject bar = new CategoryObject("bcde");
-        AnnotationObject t1 = new AnnotationObject("ab");
-        AnnotationObject t2 = new AnnotationObject("abc");
-        AnnotationObject t3 = new AnnotationObject("zx");
-        AnnotationObject t4 = new AnnotationObject("yy");
+        CategoryObject root = new CategoryObject("Press space to test -- root");
+        CategoryObject bar = new CategoryObject("cat1");
+        AnnotationObject t1 = new AnnotationObject("anot1");
+        AnnotationObject t2 = new AnnotationObject("anot2");
+        ReferenceObject t3 = new ReferenceObject("ref1");
+        ReferenceObject t4 = new ReferenceObject("ref2");
 
-        bar.getChildren().addAll(t1, t2, t3, t4);
+        bar.getChildren().addAll(t1, t2);
+        t1.getChildren().add(t3);
+        t2.getChildren().add(t4);
         root.getChildren().addAll(bar);
 
         TreeObjectItem<TreeObject<?>> rootItem = create(root); //automatically constructs the whole tree
@@ -82,9 +84,7 @@ public class AnnotationTree extends TreeView<TreeObject<?>> {
                 tmp.filtered(item -> item != null && item != this.getRoot()).forEach(item -> {
                     TreeObject<?> value = item.getValue();
                     item.getParent().getValue().getChildren().remove(value);
-                    if (value instanceof CategoryObject) { //necessary?
-                        ((CategoryObject) value).deleteChildrenRecursive();
-                    }
+                    value.clearChildren();
                 });
                 this.getSelectionModel().clearSelection();
             }
