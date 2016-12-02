@@ -32,12 +32,9 @@ public class GroupCreateDialog extends Dialog {
 		public CreatePane(GroupCreateDialog groupCreateDialog) {
 			DialogPane crtPane = groupCreateDialog.getDialogPane();
 			
-			SimpleBooleanProperty invalidName = new SimpleBooleanProperty();
-	        invalidName.set(true);
-	        SimpleBooleanProperty invalidDoc = new SimpleBooleanProperty();
-	        invalidDoc.set(true);
-	        SimpleBooleanProperty invalidPrivilege = new SimpleBooleanProperty();
-	        invalidPrivilege.set(true);
+			SimpleBooleanProperty invalidName = new SimpleBooleanProperty(true);
+	        SimpleBooleanProperty invalidDoc = new SimpleBooleanProperty(true);
+	        SimpleBooleanProperty invalidPrivilege = new SimpleBooleanProperty(true);
 			
 			final TextField name = new TextField("");
 			name.textProperty().addListener((ov, oldV, newV) -> {
@@ -63,7 +60,12 @@ public class GroupCreateDialog extends Dialog {
 	        	File file = fileChooser.showOpenDialog(((Node)e.getTarget()).getScene().getWindow());
                 if (file != null) {
                 	invalidDoc.set(file==null);
-                	System.out.println(file.getName());
+                	openButton.setText(file.getName());
+
+
+
+                	//System.out.println(file.getName());
+
                 
                 }
 	        });

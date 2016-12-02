@@ -55,13 +55,20 @@ public class MainMenuBar extends MenuBar {
 
         final MenuItem sessNew = new MenuItem("_New session");
         sessNew.setOnAction(actionEvent -> {
-            System.out.println("NEW SESSION -- BIND ME");
+            GroupCreateDialog createGroupDialog= new GroupCreateDialog(primaryStage);
+            createGroupDialog.showAndWait();
             actionEvent.consume();
+            //System.out.println("NEW SESSION -- BIND ME");
+            //actionEvent.consume();
         });
         final MenuItem sessJoin = new MenuItem("_Join session");
         sessJoin.setOnAction(actionEvent -> {
-            System.out.println("SESSION JOIN -- BIND ME");
-            actionEvent.consume();
+            GroupsDialog groupsDialog = new GroupsDialog(primaryStage);
+            groupsDialog.showAndWait();
+
+
+            //System.out.println("SESSION JOIN -- BIND ME");
+            //actionEvent.consume();
         });
         final MenuItem sessActive = new MenuItem("_Active session");
         sessActive.disableProperty().bind(User.hasActiveSession.not());
