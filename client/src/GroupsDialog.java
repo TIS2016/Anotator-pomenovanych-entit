@@ -13,6 +13,10 @@ import javafx.stage.Window;
 
 import javax.swing.text.AbstractDocument;
 
+/*
+*Used code from: http://stackoverflow.com/questions/28264907/javafx-listview-contextmenu
+*/
+
 public class GroupsDialog extends Dialog {
 	public GroupsDialog(Window owner){
 		this.initOwner(owner);
