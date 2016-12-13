@@ -1,0 +1,28 @@
+Login 
+sql = "SELECT passwd FROM users WHERE uname = %s"
+Register
+sql = "INSERT INTO users (full_name, uname, passwd, email) VALUES (%s, %s, %s, %s)"
+
+Project
+-NewProject
+sql = "INSERT INTO sessions (owner_id, name, doc_name, desctiption, default_privileges, passwd) VALUES (%s, %s, %s, %s, %s, %s)"
+-Get Existing Projects
+sql = "SELECT name FROM doc_names"
+-Get password
+sql = "SELECT passwd FROM sessions WHERE name = %s"
+-Get info
+sql = "SELECT users.uname, sessions.name, sessions.doc_name, sessions.description FROM users JOIN sessions ON users.id = sessions.owner_id"
+-delete
+sql = "DELETE FROM sessions WHERE name = %s"
+
+Annotations
+-NewCategory
+sql= "INSERT INTO categories (name, tag, color, parent_id, sessions_id) VALUES (%s, %s, %s, %s, %s)" 
+-getAll names
+sql= "SELECT name FROM categories"
+-AddAnnotation
+sql = "INSERT INTO annotations (owner_id, categories_id, start, len, links) VALUES (%s, %s, %s, %s, %s)"
+
+Export
+-getAllAnots
+sql = "SELECT a.start, a.len, a.links, c.tag FROM annotations as a JOIN categories as c ON c.id = a.categories_id JOIN sessions as s ON s.id=c.sessions_id WHERE s.name = %s"
