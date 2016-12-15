@@ -149,7 +149,7 @@ public class MainMenuBar extends MenuBar {
 
         final MenuItem anotNew = new MenuItem("_New category");
         anotNew.setOnAction(actionEvent -> {
-            CreateCategoryDialog  categoryDialog = new CreateCategoryDialog(primaryStage);
+            CategoryDialog categoryDialog = new CategoryDialog(primaryStage);
             categoryDialog.showAndWait();
             actionEvent.consume();
         });

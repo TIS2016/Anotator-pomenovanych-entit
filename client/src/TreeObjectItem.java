@@ -1,3 +1,4 @@
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -8,6 +9,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.TreeItem;
+import javafx.util.Callback;
 
 import java.lang.reflect.Field;
 
@@ -17,7 +19,11 @@ import java.lang.reflect.Field;
  */
 public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T> {
 
-    private final ObservableList<TreeObjectItem<T>> unsortedChildren = FXCollections.observableArrayList();
+    private final Callback<TreeObjectItem<T>, Observable[]> extractor = treeObjectItem -> {
+        return new Observable[] {treeObjectItem.getValue().nameProperty()};
+    };
+
+    private final ObservableList<TreeObjectItem<T>> unsortedChildren = FXCollections.observableArrayList(extractor);
 
     private final SortedList<TreeObjectItem<T>> sortedChildren = new SortedList<>(unsortedChildren, (i1, i2) -> {
         TreeObject<?> o1 = i1.getValue();
@@ -25,10 +31,10 @@ public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T>
         if (o1 instanceof CategoryObject) {
             if (o2 instanceof CategoryObject)
                 return o1.getName().compareTo(o2.getName());
-            return 1; //group categories first
+            return -1; //categories go first
         }
         if (o2 instanceof CategoryObject)
-            return -1;
+            return 1;
         return o1.getName().compareTo(o2.getName());
     });
 
@@ -53,14 +59,6 @@ public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T>
                 return this.predicate.get().test(this, child.getValue());
             };
         }, this.predicate));
-        try {
-            Field declaredField = TreeItem.class.getDeclaredField("childrenListener");
-            declaredField.setAccessible(true);
-            sortedChildren.addListener((ListChangeListener<? super TreeObjectItem>) declaredField.get(this));
-            filteredChildren.addListener((ListChangeListener<? super TreeObjectItem>) declaredField.get(this));
-        } catch (Exception e) {
-            //e.printStackTrace();
-        }
     }
 
     public final ObjectProperty<TreePredicate<T>> predicateProperty() {
@@ -72,21 +70,20 @@ public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T>
             Field childrenField = TreeItem.class.getDeclaredField("children");
             childrenField.setAccessible(true);
             childrenField.set(this, list);
+            Field declaredField = TreeItem.class.getDeclaredField("childrenListener");
+            declaredField.setAccessible(true);
+            //sortedChildren.addListener((ListChangeListener<? super TreeObjectItem>) declaredField.get(this));
+            list.addListener((ListChangeListener<? super TreeObjectItem>) declaredField.get(this));
         } catch (Exception e) {
             //e.printStackTrace();
         }
     }
 
-    public final void setSortedChildren() {
-        setHiddenFieldChildren(sortedChildren);
-    } //TODO: maybe remove
-
     public final void setFilteredChildren() {
         setHiddenFieldChildren(filteredChildren);
-    } //TODO: maybe remove
+    }
 
     public ObservableList<TreeObjectItem<T>> getInternalChildren() {
         return unsortedChildren;
     }
-
 }

@@ -7,6 +7,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Window;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 
 /**
@@ -31,6 +32,8 @@ public class ConnectionDialog extends Dialog {
             Platform.runLater(() -> {
                     hostName.requestFocus();
             });
+            hostName.setText("localhost"); //TODO: remove me
+
 
             TextField portNumber = new TextField();
             portNumber.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -41,6 +44,8 @@ public class ConnectionDialog extends Dialog {
                     invalidPort.set(true);
                 }
             });
+            portNumber.setText("10001"); //TODO: remove me
+
 
             Label hostLabel = new Label("_Host:");
             hostLabel.setMnemonicParsing(true);
@@ -61,9 +66,13 @@ public class ConnectionDialog extends Dialog {
             connectBtn.disableProperty().bind(invalidPort.or(invalidHost));
             connectBtn.addEventFilter(ActionEvent.ACTION, event -> {
                 try {
-                    Socket socket = new Socket(hostName.getText().trim(),
-                            Integer.parseInt(portNumber.getText().trim()));
-                    LoginDialog loginDialog = new LoginDialog(conDialog.getOwner());
+                    InetAddress host = InetAddress.getByName(hostName.getText().trim());
+                    int port = Integer.parseInt(portNumber.getText().trim());
+
+                    Socket socket = new Socket(host, port);
+                    Connection c = new Connection(socket);
+
+                    LoginDialog loginDialog = new LoginDialog(conDialog.getOwner(), c);
                     boolean ok = loginDialog.showAndWait().orElse(false); //uncomment this
                     if (!ok) { //consume this event if we pressed Cancel in loginDialog
                         event.consume();

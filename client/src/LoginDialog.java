@@ -14,31 +14,6 @@ import javafx.stage.Window;
  */
 public class LoginDialog extends Dialog<Boolean> {
 
-    private class PasswordFieldSkin extends TextFieldSkin {
-
-        private SimpleBooleanProperty isSkinSet = new SimpleBooleanProperty();
-        public static final char BULLET = '\u2022';
-
-        public PasswordFieldSkin(TextField textField, CheckBox noSkinSet) {
-            super(textField);
-            isSkinSet.bind(noSkinSet.selectedProperty().not());
-        }
-
-        @Override
-        protected  String maskText(String txt) {
-
-            TextField textField = this.getSkinnable();
-            if (isSkinSet != null && this.isSkinSet.get() && textField instanceof PasswordField) {
-                int n = textField.getLength();
-                StringBuilder pwBuilder = new StringBuilder(n);
-                for (int i = 0; i < n; i++)
-                    pwBuilder.append(BULLET);
-                return pwBuilder.toString();
-            }
-            return txt;
-        }
-    }
-
     private class LoginTab extends Tab {
 
         private SimpleBooleanProperty logNotOk = new SimpleBooleanProperty(true);
@@ -73,8 +48,8 @@ public class LoginDialog extends Dialog<Boolean> {
                     or(password.textProperty().isEmpty())));
 
             root.setAlignment(Pos.CENTER);
-            root.setHgap(5);
-            root.setVgap(5);
+            root.setHgap(10);
+            root.setVgap(10);
             root.add(usernameLabel, 0, 0);
             root.add(username, 1, 0);
             root.add(passwordLabel, 0, 1);
@@ -190,7 +165,7 @@ public class LoginDialog extends Dialog<Boolean> {
         }
     }
 
-    public LoginDialog(Window owner) {
+    public LoginDialog(Window owner, Connection c) {
         this.initOwner(owner);
         this.setTitle("Login");
 
@@ -207,15 +182,9 @@ public class LoginDialog extends Dialog<Boolean> {
         dialogPane.getButtonTypes().setAll(okButton, cancelBtn);
 
         Button okBtn = (Button) dialogPane.lookupButton(okButton);
-        okBtn.disableProperty().bind(loginTab.logNotOk.or(regTab.regNotOk));
+        //okBtn.disableProperty().bind(loginTab.logNotOk.or(regTab.regNotOk));
         okBtn.addEventFilter(ActionEvent.ACTION, event -> {
-            if (true) { //we failed to log in or register, consume this event
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("ERROR");
-                alert.setHeaderText("TODO: send data to server...");
-                alert.showAndWait();
-                event.consume();
-            }
+
         });
 
         this.setResultConverter(buttonType -> {

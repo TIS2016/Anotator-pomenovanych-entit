@@ -13,10 +13,6 @@ import javafx.stage.Window;
 
 import javax.swing.text.AbstractDocument;
 
-/*
-*Used code from: http://stackoverflow.com/questions/28264907/javafx-listview-contextmenu
-*/
-
 public class GroupsDialog extends Dialog {
 	public GroupsDialog(Window owner){
 		this.initOwner(owner);
@@ -144,31 +140,6 @@ public class GroupsDialog extends Dialog {
 					event.consume();
 				}
 			});
-		}
-
-		private class PasswordFieldSkin extends TextFieldSkin {
-
-			private SimpleBooleanProperty isSkinSet = new SimpleBooleanProperty();
-			public static final char BULLET = '\u2022';
-
-			public PasswordFieldSkin(TextField textField, CheckBox noSkinSet) {
-				super(textField);
-				isSkinSet.bind(noSkinSet.selectedProperty().not());
-			}
-
-			@Override
-			protected String maskText(String txt) {
-
-				TextField textField = this.getSkinnable();
-				if (isSkinSet != null && this.isSkinSet.get() && textField instanceof PasswordField) {
-					int n = textField.getLength();
-					StringBuilder pwBuilder = new StringBuilder(n);
-					for (int i = 0; i < n; i++)
-						pwBuilder.append(BULLET);
-					return pwBuilder.toString();
-				}
-				return txt;
-			}
 		}
 	}
 }

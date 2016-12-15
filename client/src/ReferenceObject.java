@@ -4,29 +4,27 @@ import javafx.collections.ObservableList;
 /**
  * Created by michal on 12/1/16.
  */
-public class ReferenceObject extends TreeObject<TreeObject<?>> {
+public class ReferenceObject extends DisplayedTreeObject<DisplayedTreeObject<?>> {
 
     public ReferenceObject(String name) {
         super(name);
     }
 
     @Override
-    public void add(TreeObject<?> item) throws IllegalStateException {
+    public void add(DisplayedTreeObject<?> item) throws IllegalStateException {
         throw new IllegalStateException("Annotation object can't have children");
     }
 
     @Override
-    public void addAll(TreeObject<?>... items) throws IllegalStateException {
+    public void addAll(DisplayedTreeObject<?>... items) throws IllegalStateException {
         throw new IllegalStateException("Annotation object can't have children");
     }
 
     @Override
-    public ObservableList<TreeObject<?>> getChildren() {
+    public ObservableList<DisplayedTreeObject<?>> getChildren() {
         return FXCollections.emptyObservableList();
     }
 
     @Override
-    protected final void clearChildren() {
-        this.getChildren().clear();
-    }
+    protected final void clearChildren() {}
 }

@@ -1,8 +1,11 @@
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Window;
 import org.fxmisc.wellbehaved.event.Nodes;
 
@@ -16,41 +19,55 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
  */
 public class AnnotationTree extends TreeView<TreeObject<?>> {
 
+    protected Window parent;
+    private static final ObservableList<TreeObject<?>> internalItems = FXCollections.observableArrayList();
+    public static final FilteredList<TreeObject<?>> categories = new FilteredList<>(internalItems, treeObject -> {
+        return treeObject instanceof CategoryObject;
+    });
+
+    //TODO: rewrite as non static
     public static TreeObjectItem<TreeObject<?>> create(TreeObject<?> obj) {
         TreeObjectItem<TreeObject<?>> item = new TreeObjectItem<>(obj);
+        if (!internalItems.contains(obj)) { //because of update/reorder
+            internalItems.add(obj);
+        }
+        //ObservableList<TreeObjectItem<TreeObject<?>>> internalTreeItems = item.getInternalChildren();
         item.getInternalChildren().addAll(obj.getChildren().stream().map(AnnotationTree::create).collect(Collectors.toList()));
-        item.setExpanded(true);
+        if (item.getValue() instanceof CategoryObject)
+            item.setExpanded(true);
 
-        obj.getChildren().addListener((Change<? extends TreeObject<?>> c) -> {
-            //item.setSortedChildren(); //???
+        ListChangeListener<TreeObject<?>> listener = (Change<? extends TreeObject<?>> c) -> {
             while (c.next()) {
                 if (c.wasAdded()) {
                     item.getInternalChildren().addAll(c.getAddedSubList().stream().map(AnnotationTree::create).collect(Collectors.toList()));
-                }
-                if (c.wasRemoved()) {
+                    if (item.getValue() instanceof CategoryObject)
+                        item.setExpanded(true);
+                } else if (c.wasRemoved()) {
+                    internalItems.removeAll(c.getRemoved());
                     item.getInternalChildren().removeIf(treeItem -> c.getRemoved().contains(treeItem.getValue()));
                 }
             }
-            //item.setFilteredChildren();
-        });
+        };
+        obj.addChildrenListener(listener);
         return item;
     }
-
-    protected Window parent;
 
     public AnnotationTree(Window parent) {
         this.parent = parent;
         this.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         //test
-        CategoryObject root = new CategoryObject("Press space to test -- root");
-        CategoryObject bar = new CategoryObject("cat1");
+        CategoryObject root = new CategoryObject("Categories", "xxx", Color.WHITE);
+
+        CategoryObject bar = new CategoryObject("cate1", "cat1_Tag", Color.ROYALBLUE);
+        CategoryObject bar2 = new CategoryObject("cate2", "cat2_Tag", Color.RED);
+
         AnnotationObject t1 = new AnnotationObject("anot1");
         AnnotationObject t2 = new AnnotationObject("anot2");
         ReferenceObject t3 = new ReferenceObject("ref1");
         ReferenceObject t4 = new ReferenceObject("ref2");
 
-        bar.getChildren().addAll(t1, t2);
+        bar.getChildren().addAll(t1, t2, bar2);
         t1.getChildren().add(t3);
         t2.getChildren().add(t4);
         root.getChildren().addAll(bar);
@@ -58,10 +75,9 @@ public class AnnotationTree extends TreeView<TreeObject<?>> {
         TreeObjectItem<TreeObject<?>> rootItem = create(root); //automatically constructs the whole tree
 
         ContextMenu categoryMenu = new ContextMenu();
-        MenuItem categoryMenuItem = new MenuItem("Dummy category");
+        MenuItem categoryMenuItem = new MenuItem("New category");
         categoryMenuItem.setOnAction(actionEvent -> {
-            CategoryObject dummyText = new CategoryObject("dummy category");
-            ((CategoryObject) this.getRoot().getValue()).getChildren().add(dummyText);
+            new CategoryDialog(parent).showAndWait();
             actionEvent.consume();
         });
 
@@ -75,15 +91,13 @@ public class AnnotationTree extends TreeView<TreeObject<?>> {
         });
 
         this.setOnKeyPressed(keyEvent -> {
-            if (keyEvent.getCode() == KeyCode.SPACE) { //remove me
-                categoryMenuItem.fire();
-            }
             if (keyEvent.getCode() == KeyCode.DELETE) {
                 ObservableList<TreeItem<TreeObject<?>>> tmp = FXCollections.observableArrayList(this.getSelectionModel().getSelectedItems());
-                //FXCollections.copy(foo, this.getSelectionModel().getSelectedItems());
-                tmp.filtered(item -> item != null && item != this.getRoot()).forEach(item -> {
+                tmp.filtered(item -> item != this.getRoot()).forEach(item -> {
                     TreeObject<?> value = item.getValue();
-                    item.getParent().getValue().getChildren().remove(value);
+                    if (item.getParent() != null) {
+                        item.getParent().getValue().getChildren().remove(value);
+                    }
                     value.clearChildren();
                 });
                 this.getSelectionModel().clearSelection();

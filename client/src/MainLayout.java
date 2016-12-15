@@ -1,9 +1,11 @@
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
@@ -11,6 +13,7 @@ import org.fxmisc.richtext.*;
 import org.fxmisc.wellbehaved.event.Nodes;
 
 import java.time.Duration;
+import java.util.HashMap;
 
 import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
@@ -86,7 +89,7 @@ public class MainLayout extends VBox {
             if (treeSearch.getText() == null || treeSearch.getText().trim().isEmpty()) {
                 return null;
             }
-            return TreePredicate.create(child -> child.getName().contains(treeSearch.getText()));
+            return TreePredicate.create(child -> child.getName().contains(treeSearch.getText().trim()));
         }, treeSearch.textProperty()));
 
         VBox.setVgrow(annotationTree, Priority.ALWAYS);
@@ -99,10 +102,11 @@ public class MainLayout extends VBox {
 
         ContextMenu contextMenu = new ContextMenu();
 
-        textArea.setOnKeyPressed(keyEvent -> { //for mnemonics
-            System.out.println(keyEvent.getCode());
+        textArea.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ALT) {
-                mainMenuBar.requestFocus();
+                mainMenuBar.requestFocus(); //for mnemonics
+            } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
+                Platform.exit();
             }
             keyEvent.consume();
         });
@@ -111,6 +115,9 @@ public class MainLayout extends VBox {
 
         textArea.addEventHandler(MouseEvent.MOUSE_CLICKED, me -> {
             System.out.println("Click in text area -- CONTEXT MENU TEST");
+            AnnotationTree.categories.forEach(c -> {
+                System.out.println(String.format("%s: depth: %d, parent: %s", c, c.getDepth(), c.getParent()));
+            });
             if (contextMenu.isShowing()) {
                 contextMenu.hide();
             }
@@ -128,6 +135,20 @@ public class MainLayout extends VBox {
         KeyCodeCombination searchCombination = new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN);
         Nodes.addInputMap(textArea, consume(keyPressed(searchCombination), keyEvent -> {
             System.out.println("CTRL-F SEARCH INVOKED -- BIND ME");
+            keyEvent.consume();
+        }));
+
+        KeyCodeCombination annotCombination = new KeyCodeCombination(KeyCode.A, KeyCombination.SHIFT_ANY);
+
+        Nodes.addInputMap(textArea, consume(keyPressed(annotCombination).onlyIf(keyEvent -> {
+            return textArea.getSelection().getLength() > 0; //TODO: add more control
+        }), keyEvent -> {
+            System.out.println("SHIFT-A: test tree data");
+            System.out.println(AnnotationTree.categories.size());
+            AnnotationTree.categories.forEach(c -> {
+                System.out.println(c.toString());
+            });
+            keyEvent.consume();
         }));
 
         this.heightProperty().addListener((observable, oldValue, newValue) -> {
