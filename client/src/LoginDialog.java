@@ -1,4 +1,3 @@
-import com.sun.javafx.scene.control.skin.TextFieldSkin;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -14,11 +13,46 @@ import javafx.stage.Window;
  */
 public class LoginDialog extends Dialog<Boolean> {
 
+    public LoginDialog(Window owner, Connection c) {
+        super();
+        this.initOwner(owner);
+        this.setTitle("Login");
+
+        DialogPane dialogPane = this.getDialogPane();
+        LoginTab loginTab = new LoginTab();
+        RegTab regTab = new RegTab();
+        TabPane root = new TabPane(loginTab, regTab);
+        root.setPadding(new Insets(0));
+        root.getSelectionModel().select(loginTab);
+        dialogPane.setContent(root);
+
+        ButtonType okButton = new ButtonType("Ok", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialogPane.getButtonTypes().setAll(okButton, cancelBtn);
+
+        Button okBtn = (Button) dialogPane.lookupButton(okButton);
+        //okBtn.disableProperty().bind(loginTab.logNotOk.or(regTab.regNotOk));
+        okBtn.addEventFilter(ActionEvent.ACTION, event -> {
+
+        });
+
+        this.setResultConverter(buttonType -> buttonType == okButton);
+
+        loginTab.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                setTitle(loginTab.getText());
+            } else {
+                setTitle(regTab.getText());
+            }
+        });
+    }
+
     private class LoginTab extends Tab {
 
         private SimpleBooleanProperty logNotOk = new SimpleBooleanProperty(true);
 
         public LoginTab() {
+            super();
             this.setText("Login");
             this.setClosable(false);
             GridPane root = new GridPane();
@@ -47,6 +81,7 @@ public class LoginDialog extends Dialog<Boolean> {
             logNotOk.bind(this.selectedProperty().and(uNameNotOk.
                     or(password.textProperty().isEmpty())));
 
+            root.setPadding(new Insets(10));
             root.setAlignment(Pos.CENTER);
             root.setHgap(10);
             root.setVgap(10);
@@ -65,6 +100,7 @@ public class LoginDialog extends Dialog<Boolean> {
         private SimpleBooleanProperty regNotOk = new SimpleBooleanProperty(true);
 
         public RegTab() {
+            super();
             this.setText("Register");
             this.setClosable(false);
 
@@ -122,7 +158,6 @@ public class LoginDialog extends Dialog<Boolean> {
             Label confirmPasswordLabel = new Label("Confirm:");
             confirmPasswordLabel.setLabelFor(confirmPassword);
 
-            showPassword.setSelected(false);
             showPassword.selectedProperty().addListener((observable, oldValue, newValue) -> {
                 password.setText(password.getText());
                 confirmPassword.setText(confirmPassword.getText());
@@ -143,10 +178,10 @@ public class LoginDialog extends Dialog<Boolean> {
                     or(confirmPassword.textProperty().isEmpty()).
                     or(passwordNotOk)));
 
-            root.setAlignment(Pos.CENTER);
             root.setPadding(new Insets(10));
-            root.setHgap(5);
-            root.setVgap(5);
+            root.setAlignment(Pos.CENTER);
+            root.setHgap(10);
+            root.setVgap(10);
             root.add(firstnameLabel, 0, 0);
             root.add(firstname, 1, 0);
             root.add(lastnameLabel, 0, 1);
@@ -163,40 +198,5 @@ public class LoginDialog extends Dialog<Boolean> {
             root.add(statusLabel, 1, 6);
             this.setContent(root);
         }
-    }
-
-    public LoginDialog(Window owner, Connection c) {
-        this.initOwner(owner);
-        this.setTitle("Login");
-
-        DialogPane dialogPane = this.getDialogPane();
-        LoginTab loginTab = new LoginTab();
-        RegTab regTab = new RegTab();
-        TabPane root = new TabPane(loginTab, regTab);
-        root.setPadding(new Insets(0));
-        root.getSelectionModel().select(loginTab);
-        dialogPane.setContent(root);
-
-        ButtonType okButton = new ButtonType("Ok", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialogPane.getButtonTypes().setAll(okButton, cancelBtn);
-
-        Button okBtn = (Button) dialogPane.lookupButton(okButton);
-        //okBtn.disableProperty().bind(loginTab.logNotOk.or(regTab.regNotOk));
-        okBtn.addEventFilter(ActionEvent.ACTION, event -> {
-
-        });
-
-        this.setResultConverter(buttonType -> {
-            return buttonType == okButton;
-        });
-
-        loginTab.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                setTitle(loginTab.getText());
-            } else {
-                setTitle(regTab.getText());
-            }
-        });
     }
 }

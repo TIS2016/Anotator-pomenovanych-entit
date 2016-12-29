@@ -1,3 +1,4 @@
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -10,47 +11,52 @@ import javafx.collections.ObservableList;
 public abstract class TreeObject<T extends TreeObject<?>> {
 
     private final SimpleStringProperty nameProperty = new SimpleStringProperty();
+    private final SimpleStringProperty fullNameProperty = new SimpleStringProperty();
     private final ObservableList<T> children = FXCollections.observableArrayList();
     private final SimpleObjectProperty<TreeObject<?>> parentProperty = new SimpleObjectProperty<>();
     private ListChangeListener<TreeObject<?>> listener;
+    private final SimpleBooleanProperty selectedProperty = new SimpleBooleanProperty();
 
-    private final SimpleIntegerProperty depthProperty = new SimpleIntegerProperty(0); //TODO: remove me, I'm not used
+    public static final int MAX_DISPLAYED_LEGTH = 100;
 
     public TreeObject(String name) {
-        this.setName(name);
+        this.setFullName(name);
 
-        this.parentProperty.addListener(((observable, oldValue, newValue) -> {
-            assert newValue == this.parentProperty.get();
-            assert newValue != null;
-            this.depthProperty().bind(newValue.depthProperty.add(1));
-        }));
-        this.depthProperty().addListener(((observable, oldValue, newValue) -> { //update all children depths
-            children.forEach(c -> {
-                c.depthProperty().bind(this.depthProperty.add(1));
-            });
-        }));
+        this.nameProperty.bind(Bindings.createObjectBinding(() -> {
+            String fullName = this.fullNameProperty.get();
+            return fullName != null ? fullName.substring(0, Math.min(fullName.length(), MAX_DISPLAYED_LEGTH)) : "";
+        }, this.fullNameProperty));
 
         this.children.addListener((ListChangeListener.Change<? extends TreeObject<?>> c) -> {
             while (c.next()) {
                 if (c.wasAdded()) {
-                    c.getAddedSubList().forEach((TreeObject<?> o) -> {
-                        o.setParent(this);
-                    });
+                    c.getAddedSubList().stream().filter(o -> o.getParent() != this).forEach((TreeObject<?> o) -> o.setParent(this));
                 }
             }
         });
+    }
+
+    public final SimpleBooleanProperty selectedProperty() {
+        return this.selectedProperty;
+    }
+
+    public final boolean isSelected() {
+        return selectedProperty.get();
     }
 
     public String toString() { //combobox prettyprint
         return getParent() == null ? "None" : this.getName();
     }
 
-    public final void addChildrenListener(ListChangeListener<TreeObject<?>> listener) {
+    public final void setChildrenListener(ListChangeListener<TreeObject<?>> listener) {
         this.listener = listener;
         this.children.addListener(this.listener);
     }
 
     public final boolean isOnPathToRoot(TreeObject<?> treeObject) {
+        if (treeObject == null) {
+            return false;
+        }
         TreeObject<?> current = this;
         while (current != null) {
             if (current == treeObject)
@@ -60,31 +66,24 @@ public abstract class TreeObject<T extends TreeObject<?>> {
         return false;
     }
 
-    public final SimpleStringProperty nameProperty() {
-        return this.nameProperty;
-    }
-
-    public final void setName(String name) {
-        this.nameProperty.set(name);
-    }
-
     public final String getName() {
         return this.nameProperty.get();
+    }
+
+    public final void setFullName(String name) {
+        this.fullNameProperty.set(name);
+    }
+
+    public final String getFullName() {
+        return this.fullNameProperty.get();
     }
 
     public final SimpleObjectProperty<TreeObject<?>> parentProperty() {
         return this.parentProperty;
     }
 
-    public final SimpleIntegerProperty depthProperty() {
-        return this.depthProperty;
-    }
-    public final int getDepth() {
-        return this.depthProperty.get();
-    }
-
-    public final void changeParent(CategoryObject newParent) {
-        TreeObject<?> oldParent = this.getParent();
+    public final void changeParent(TreeObject<TreeObject<?>> newParent) {
+        TreeObject<? extends TreeObject<?>> oldParent = this.getParent();
         if (oldParent != newParent) {
             this.children.removeListener(this.listener);
             this.listener = null;
@@ -114,9 +113,11 @@ public abstract class TreeObject<T extends TreeObject<?>> {
     }
 
     protected void clearChildren() {
-        this.getChildren().forEach(child -> {
-            child.clearChildren();
-        });
+        this.getChildren().forEach(child -> child.clearChildren());
         this.getChildren().clear();
+    }
+
+    public final StringProperty nameProperty() {
+        return this.nameProperty;
     }
 }

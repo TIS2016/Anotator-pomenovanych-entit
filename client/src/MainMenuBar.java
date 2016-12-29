@@ -1,7 +1,11 @@
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.fxmisc.flowless.VirtualizedScrollPane;
+import org.fxmisc.richtext.StyledTextArea;
 
 /**
  * Created by michal on 11/23/16.
@@ -11,8 +15,8 @@ public class MainMenuBar extends MenuBar {
     public MainMenuBar(Stage primaryStage, SplitPane masterSplitPane, SplitPane slaveSplitPane) {
         final Menu fileMenu = new Menu("_File");
 
-        final MenuItem fileExport = new MenuItem("_Export");
-        fileExport.disableProperty().bind(User.isConnected.not());
+        final MenuItem fileExport = new MenuItem("_Export - NYI");
+        fileExport.disableProperty().bind(SessionData.isConnected.not());
         fileExport.setOnAction(actionEvent -> {
             System.out.println("FILE EXPORT -- BIND ME");
             actionEvent.consume();
@@ -27,7 +31,7 @@ public class MainMenuBar extends MenuBar {
 
         final Menu connMenu = new Menu("_Connection");
 
-        final MenuItem connNew = new MenuItem("_New connection");
+        final MenuItem connNew = new MenuItem("_New Connection");
         connNew.setOnAction(actionEvent -> {
             ConnectionDialog connectionDialog = new ConnectionDialog(primaryStage);
             actionEvent.consume();
@@ -35,14 +39,14 @@ public class MainMenuBar extends MenuBar {
         });
 
 
-        final MenuItem connDisconnect = new MenuItem("_Disconnect");
-        connDisconnect.disableProperty().bind(User.isConnected.not());
+        final MenuItem connDisconnect = new MenuItem("_Disconnect - NYI");
+        connDisconnect.disableProperty().bind(SessionData.isConnected.not());
         connDisconnect.setOnAction(actionEvent -> {
             System.out.println("CONNECTION DISCONNECT -- BIND ME");
             actionEvent.consume();
         });
 
-        final MenuItem connOptions = new MenuItem("_Options");
+        final MenuItem connOptions = new MenuItem("_Options - NYI");
         connOptions.setOnAction(actionEvent -> {
             System.out.println("CONNECTION OPTIONS -- BIND ME");
             actionEvent.consume();
@@ -50,63 +54,59 @@ public class MainMenuBar extends MenuBar {
 
         connMenu.getItems().setAll(connNew, connDisconnect, new SeparatorMenuItem(), connOptions);
 
-        final Menu sessionMenu = new Menu("_Session");
-        sessionMenu.disableProperty().bind(User.isConnected.not());
+        final Menu projectionMenu = new Menu("_Projects");
+        projectionMenu.disableProperty().bind(SessionData.isConnected.not());
 
-        final MenuItem sessNew = new MenuItem("_New session");
-        sessNew.setOnAction(actionEvent -> {
-            GroupCreateDialog createGroupDialog= new GroupCreateDialog(primaryStage);
-            createGroupDialog.showAndWait();
+        final MenuItem projectNew = new MenuItem("_New Project");
+        projectNew.setOnAction(actionEvent -> {
+            ProjectDialog projectDialog= new ProjectDialog(primaryStage);
+            projectDialog.showAndWait();
             actionEvent.consume();
             //System.out.println("NEW SESSION -- BIND ME");
             //actionEvent.consume();
         });
-        final MenuItem sessJoin = new MenuItem("_Join session");
-        sessJoin.setOnAction(actionEvent -> {
-            GroupsDialog groupsDialog = new GroupsDialog(primaryStage);
-            groupsDialog.showAndWait();
-
-
-            //System.out.println("SESSION JOIN -- BIND ME");
-            //actionEvent.consume();
+        final MenuItem projectJoin = new MenuItem("_Search Projects");
+        projectJoin.setOnAction(actionEvent -> {
+            new ProjectSearchDialog(primaryStage).showAndWait();
+            actionEvent.consume();
         });
-        final MenuItem sessActive = new MenuItem("_Active session");
-        sessActive.disableProperty().bind(User.hasActiveSession.not());
-        sessActive.setOnAction(actionEvent -> {
+        final MenuItem projectActive = new MenuItem("_Active Project - NYI");
+        projectActive.disableProperty().bind(SessionData.hasActiveSession.not());
+        projectActive.setOnAction(actionEvent -> {
             System.out.println("ACTIVE INFO SESSION -- BIND ME");
             actionEvent.consume();
         });
-        final MenuItem sessLeave = new MenuItem("L_eave");
-        sessLeave.disableProperty().bind(User.hasActiveSession.not());
-        sessLeave.setOnAction(actionEvent -> {
+        final MenuItem projectLeave = new MenuItem("L_eave Project - NYI");
+        projectLeave.disableProperty().bind(SessionData.hasActiveSession.not());
+        projectLeave.setOnAction(actionEvent -> {
             System.out.println("LEAVE SESSION -- BIND ME");
             actionEvent.consume();
         });
 
-        sessionMenu.getItems().setAll(sessNew, sessJoin,
-                new SeparatorMenuItem(), sessActive, sessLeave);
+        projectionMenu.getItems().setAll(projectNew, projectJoin,
+                new SeparatorMenuItem(), projectActive, projectLeave);
 
         final Menu logMenu = new Menu("_Log");
-        logMenu.disableProperty().bind(User.hasActiveSession.not());
+        logMenu.disableProperty().bind(SessionData.hasActiveSession.not());
 
-        final MenuItem logExport = new MenuItem("_Export log");
+        final MenuItem logExport = new MenuItem("_Export Log - NYI");
         logExport.setOnAction(actionEvent -> {
             System.out.println("EXPORT LOG -- BIND ME");
             actionEvent.consume();
         });
-        final MenuItem logClear = new MenuItem("_Clear log");
+        final MenuItem logClear = new MenuItem("_Clear Log - NYI");
         logClear.setOnAction(actionEvent -> {
             System.out.println("CLEAR LOG -- BIND ME");
             actionEvent.consume();
         });
-        final Menu logDisplayOptions = new Menu("P_osition");
+        final Menu logDisplayOptions = new Menu("Log Po_sition");
 
         final ToggleGroup logToggleGroup = new ToggleGroup();
 
         final RadioMenuItem logDisplayTab = new RadioMenuItem("_Tab");
         logDisplayTab.setToggleGroup(logToggleGroup);
 
-        final RadioMenuItem logDisplayWindow = new RadioMenuItem("_Window");
+        final RadioMenuItem logDisplayWindow = new RadioMenuItem("_Window - NYI");
         logDisplayWindow.setToggleGroup(logToggleGroup);
 
         final RadioMenuItem logDisplayNone = new RadioMenuItem("Non_e");
@@ -119,7 +119,6 @@ public class MainMenuBar extends MenuBar {
                 if (oldValue == logDisplayTab) {
                     TextArea toRemove = (TextArea) slaveSplitPane.getItems().get(1);
                     logDisplayTab.setUserData(toRemove);
-                    //lastTabDividerPosition = slaveSplitPane.getDividerPositions()[0];
                     slaveSplitPane.getItems().remove(toRemove);
                 } else if (oldValue == logDisplayWindow) {
                     //TODO
@@ -144,24 +143,43 @@ public class MainMenuBar extends MenuBar {
 
         logMenu.getItems().setAll(logExport, logClear, new SeparatorMenuItem(), logDisplayOptions);
 
-        final Menu anotMenu = new Menu("_Anotations");
-        anotMenu.disableProperty().bind(User.hasActiveSession.not());
+        final Menu annotMenu = new Menu("_Annotations");
+        annotMenu.disableProperty().bind(SessionData.hasActiveSession.not());
 
-        final MenuItem anotNew = new MenuItem("_New category");
-        anotNew.setOnAction(actionEvent -> {
+        final MenuItem cateNew = new MenuItem("Add _Category");
+        cateNew.setOnAction(actionEvent -> {
             CategoryDialog categoryDialog = new CategoryDialog(primaryStage);
             categoryDialog.showAndWait();
             actionEvent.consume();
         });
 
-        final MenuItem anotTest = new MenuItem("_Add anotation");
-        anotTest.setOnAction(actionEvent -> {
-            AnnotationDialog annotationDialog = new AnnotationDialog(primaryStage);
-            annotationDialog.showAndWait();
+        final MenuItem annotNew = new MenuItem("Add _Annotation");
+        //TODO: more cleanly
+        final StyledTextArea<Void, DisplayedTreeObject<?>> textArea =
+                ((VirtualizedScrollPane<StyledTextArea<Void, DisplayedTreeObject<?>>>)
+                ((SplitPane) masterSplitPane.getItems().get(0)).getItems().get(0)).getContent();
+        final ObservableValue<IndexRange> selectedProperty = textArea.selectionProperty();
+        annotNew.disableProperty().bind(Bindings.createBooleanBinding(
+                () -> selectedProperty.getValue().getLength() == 0,
+                selectedProperty));
+        annotNew.setOnAction(actionEvent -> {
+            new AnnotationDialog(primaryStage, textArea).showAndWait();
+            textArea.deselect();
             actionEvent.consume();
         });
 
-        final Menu treeDisplayOptions = new Menu("_Tree position");
+        final MenuItem refNew = new MenuItem("Add _Reference");
+        refNew.disableProperty().bind(Bindings.createBooleanBinding(
+                () -> selectedProperty.getValue().getLength() == 0,
+                selectedProperty));
+        refNew.setOnAction(actionEvent -> {
+            new ReferenceDialog(primaryStage, textArea).showAndWait();
+            textArea.deselect();
+            actionEvent.consume();
+        });
+
+
+        final Menu treeDisplayOptions = new Menu("Tree Po_sition");
 
         final ToggleGroup treeToggleGroup = new ToggleGroup();
 
@@ -188,8 +206,8 @@ public class MainMenuBar extends MenuBar {
             masterSplitPane.setDividerPosition(0, 0.7);
         });
 
-        anotMenu.getItems().setAll(anotNew, anotTest, new SeparatorMenuItem(), treeDisplayOptions);
+        annotMenu.getItems().setAll(cateNew, annotNew, refNew, new SeparatorMenuItem(), treeDisplayOptions);
 
-        this.getMenus().setAll(fileMenu, connMenu, sessionMenu, anotMenu, logMenu);
+        this.getMenus().setAll(fileMenu, connMenu, projectionMenu, annotMenu, logMenu);
     }
 }

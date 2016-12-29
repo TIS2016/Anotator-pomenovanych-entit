@@ -19,9 +19,8 @@ import java.lang.reflect.Field;
  */
 public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T> {
 
-    private final Callback<TreeObjectItem<T>, Observable[]> extractor = treeObjectItem -> {
-        return new Observable[] {treeObjectItem.getValue().nameProperty()};
-    };
+    private final Callback<TreeObjectItem<T>, Observable[]> extractor = treeObjectItem ->
+        new Observable[] {treeObjectItem.getValue().nameProperty()};
 
     private final ObservableList<TreeObjectItem<T>> unsortedChildren = FXCollections.observableArrayList(extractor);
 
@@ -44,9 +43,9 @@ public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T>
     public TreeObjectItem(T treeObject) {
         super(treeObject);
 
+        treeObject.selectedProperty().bind(this.selectedProperty());
         this.setFilteredChildren();
-        this.filteredChildren.predicateProperty().bind(Bindings.createObjectBinding(() -> {
-            return child -> {
+        this.filteredChildren.predicateProperty().bind(Bindings.createObjectBinding(() -> child -> {
                 if (child != null) {
                     child.predicate.set(this.predicate.get());
                 }
@@ -57,8 +56,7 @@ public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T>
                     return true;
                 }
                 return this.predicate.get().test(this, child.getValue());
-            };
-        }, this.predicate));
+            }, this.predicate));
     }
 
     public final ObjectProperty<TreePredicate<T>> predicateProperty() {
@@ -72,7 +70,6 @@ public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T>
             childrenField.set(this, list);
             Field declaredField = TreeItem.class.getDeclaredField("childrenListener");
             declaredField.setAccessible(true);
-            //sortedChildren.addListener((ListChangeListener<? super TreeObjectItem>) declaredField.get(this));
             list.addListener((ListChangeListener<? super TreeObjectItem>) declaredField.get(this));
         } catch (Exception e) {
             //e.printStackTrace();

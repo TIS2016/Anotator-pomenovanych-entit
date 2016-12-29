@@ -1,19 +1,14 @@
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Orientation;
-import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.stage.Popup;
 import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.*;
 import org.fxmisc.wellbehaved.event.Nodes;
-
-import java.time.Duration;
-import java.util.HashMap;
 
 import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
@@ -26,134 +21,189 @@ public class MainLayout extends VBox {
     public MainLayout(Stage primaryStage) {
         super();
 
-        SplitPane masterSplitPane = new SplitPane();
-        SplitPane slaveSplitPane = new SplitPane();
+        final SplitPane masterSplitPane = new SplitPane();
+        final SplitPane slaveSplitPane = new SplitPane();
+        StyledTextArea<Void, DisplayedTreeObject<?>> textArea = new StyledTextArea<>(null, ((textFlow, s) -> {}),
+                null, (textExt, treeObject) -> {
+            if (treeObject != null) {
+                textExt.fillProperty().bind(Bindings.createObjectBinding(
+                        () -> Double.compare(treeObject.colorProperty()
+                                .get().getBrightness(), 0.6) <= 0 ? Color.WHITE : Color.BLACK,
+                        treeObject.colorProperty()));
+                textExt.backgroundColorProperty().bind(treeObject.colorProperty());
+            } else {
+                textExt.backgroundColorProperty().unbind();
+                textExt.setBackgroundColor(Color.WHITE);
 
-        MainMenuBar mainMenuBar = new MainMenuBar(primaryStage, masterSplitPane, slaveSplitPane);
-        VBox.setVgrow(mainMenuBar, Priority.ALWAYS);
-
-        StyleClassedTextArea textArea = new StyleClassedTextArea();
-        textArea.insertText(0, "Hover for 1 sec over the text or" +
-                "\n right click the text");
-        textArea.setEditable(false);
-        textArea.setParagraphGraphicFactory(LineNumberFactory.get(textArea));  //TODO: custom line numbers
-
-        Popup anotationPopup = new Popup();
-        Label changeMe = new Label("TODO: display anotation info");
-        changeMe.setStyle(
-                "-fx-background-color: black;" +
-                        "-fx-text-fill: yellow;" +
-                        "-fx-padding: 5;");
-        anotationPopup.getContent().add(changeMe);
-        anotationPopup.setAutoFix(true);
-
-        textArea.setMouseOverTextDelay(Duration.ofSeconds(1));
-        textArea.addEventHandler(MouseOverTextEvent.MOUSE_OVER_TEXT_BEGIN, e -> {
-            Point2D position = e.getScreenPosition();
-            //TODO: find anotation/s based on index
-            //int index = e.getCharacterIndex();
-            anotationPopup.show(textArea, position.getX(), position.getY());
-            e.consume();
-        });
-        textArea.addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
-            if (anotationPopup.isShowing()) {
-                anotationPopup.hide();
+                textExt.fillProperty().unbind();
+                textExt.setFill(Color.BLACK);
             }
-            e.consume();
         });
 
-        VirtualizedScrollPane<StyleClassedTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        textArea.setShowCaret(StyledTextArea.CaretVisibility.ON);
+        textArea.setUseInitialStyleForInsertion(false);
+        textArea.setEditable(false);
+        textArea.setParagraphGraphicFactory(LineNumberFactory.get(textArea));
+        textArea.setStyle("-fx-font-size: 14;"); //TODO: option?
+        textArea.insertText(0, "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog\n" +
+                "The quick brown fox jumps over the lazy dog");
 
-        VBox mainArea = new VBox();
-        VBox.setVgrow(scrollPane, Priority.ALWAYS);
+        textArea.setWrapText(true);
+        VirtualizedScrollPane<StyledTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); //because wrap is on
+        //BUG -- horizontal scrollbar not working
 
         TextArea logArea = new TextArea("TODO: log");
         logArea.setEditable(false);
-        textArea.setShowCaret(StyledTextArea.CaretVisibility.ON);
-
-        mainArea.getChildren().add(scrollPane);
 
         slaveSplitPane.setOrientation(Orientation.VERTICAL);
         slaveSplitPane.setDividerPositions(0.8);
-        slaveSplitPane.getItems().addAll(mainArea, logArea);
+        slaveSplitPane.getItems().addAll(scrollPane, logArea);
 
         VBox treeBox = new VBox();
 
-        TextField treeSearch = new TextField();
-        treeSearch.setPromptText("Search");
+        TextField treeFilter = new TextField();
+        treeFilter.setPromptText("Search");
 
         AnnotationTree annotationTree = new AnnotationTree(primaryStage);
         TreeObjectItem<TreeObject<?>> rootItem = (TreeObjectItem<TreeObject<?>>) annotationTree.getRoot();
-        rootItem.predicateProperty().bind(Bindings.createObjectBinding(() -> {
-            if (treeSearch.getText() == null || treeSearch.getText().trim().isEmpty()) {
-                return null;
-            }
-            return TreePredicate.create(child -> child.getName().contains(treeSearch.getText().trim()));
-        }, treeSearch.textProperty()));
+        rootItem.predicateProperty().bind(Bindings.createObjectBinding(() -> treeFilter.getText().trim().isEmpty() ? null :
+                TreePredicate.create(child -> child.getName().contains(treeFilter.getText().trim()))
+        , treeFilter.textProperty()));
 
         VBox.setVgrow(annotationTree, Priority.ALWAYS);
 
-        treeBox.getChildren().addAll(treeSearch, annotationTree);
+        treeBox.getChildren().addAll(treeFilter, annotationTree);
 
         masterSplitPane.setOrientation(Orientation.HORIZONTAL);
         masterSplitPane.setDividerPositions(0.7);
         masterSplitPane.getItems().addAll(slaveSplitPane, treeBox);
 
+        MainMenuBar mainMenuBar = new MainMenuBar(primaryStage, masterSplitPane, slaveSplitPane);
+        VBox.setVgrow(mainMenuBar, Priority.ALWAYS);
+
         ContextMenu contextMenu = new ContextMenu();
+
+        //TODO: check privileges
+
+        MenuItem updateMenuItem = new MenuItem("Update");
+        updateMenuItem.setOnAction(actionEvent -> {
+            DisplayedTreeObject treeObject = (DisplayedTreeObject) contextMenu.getUserData();
+            if (treeObject instanceof AnnotationObject)
+                new AnnotationDialog(primaryStage, (AnnotationObject) treeObject).showAndWait();
+            else if (treeObject instanceof ReferenceObject)
+                new ReferenceDialog(primaryStage, (ReferenceObject) treeObject).showAndWait();
+            actionEvent.consume();
+        });
+
+        MenuItem deleteMenuItem = new MenuItem("Delete");
+        deleteMenuItem.setOnAction(actionEvent -> {
+            DisplayedTreeObject treeObject = (DisplayedTreeObject) contextMenu.getUserData();
+            treeObject.getParent().getChildren().remove(treeObject);
+            actionEvent.consume();
+        });
+
+        SeparatorMenuItem annotSeparator = new SeparatorMenuItem();
+        annotSeparator.visibleProperty().bind(Bindings.createBooleanBinding(
+                () -> textArea.selectionProperty().getValue().getLength() > 0,
+                textArea.selectionProperty()));
+
+        MenuItem referToThisMenuItem = new MenuItem("Refer to this");
+        referToThisMenuItem.visibleProperty().bind(Bindings.createBooleanBinding(
+                () -> textArea.selectionProperty().getValue().getLength() > 0,
+                textArea.selectionProperty()));
+
+        referToThisMenuItem.setOnAction(actionEvent -> {
+            AnnotationObject annotationObject = (AnnotationObject) contextMenu.getUserData();
+            annotationObject.getChildren().add(new ReferenceObject(textArea, annotationObject));
+            textArea.deselect();
+            actionEvent.consume();
+        });
 
         textArea.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ALT) {
-                mainMenuBar.requestFocus(); //for mnemonics
+                mainMenuBar.requestFocus(); //MenuBar mnemonics
             } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
                 Platform.exit();
             }
             keyEvent.consume();
         });
-        contextMenu.getItems().setAll(new MenuItem("Update"), new MenuItem("Delete"),
-                new SeparatorMenuItem(), new MenuItem("Comments")); //TODO: replace with real context menu
-
         textArea.addEventHandler(MouseEvent.MOUSE_CLICKED, me -> {
-            System.out.println("Click in text area -- CONTEXT MENU TEST");
-            AnnotationTree.categories.forEach(c -> {
-                System.out.println(String.format("%s: depth: %d, parent: %s", c, c.getDepth(), c.getParent()));
-            });
             if (contextMenu.isShowing()) {
                 contextMenu.hide();
             }
             if (me.getButton() == MouseButton.SECONDARY) {
                 CharacterHit hit = textArea.hit(me.getX(), me.getY());
-                int index = hit.getCharacterIndex().orElse(-1);
-                if (index != -1) { //TODO: find annotation at INDEX
+                ColorObject colorObject = SessionData.colorObjects.get(hit.getCharacterIndex().orElse(-1));
+                if (colorObject != null && colorObject.getLastSelectedBackreference() != null) {
+                    DisplayedTreeObject last = colorObject.getLastSelectedBackreference();
+                    contextMenu.setUserData(last);
+                    if (last instanceof AnnotationObject) {
+                        contextMenu.getItems().setAll(updateMenuItem,
+                                                      deleteMenuItem,
+                                                      annotSeparator,
+                                                      referToThisMenuItem);
+                    } else if (last instanceof ReferenceObject) {
+                        contextMenu.getItems().setAll(updateMenuItem, deleteMenuItem);
+                    }
                     contextMenu.show(textArea, me.getScreenX(), me.getScreenY());
                 }
             }
             me.consume();
         });
 
-
-        KeyCodeCombination searchCombination = new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN);
+        /*KeyCodeCombination searchCombination = new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN);
         Nodes.addInputMap(textArea, consume(keyPressed(searchCombination), keyEvent -> {
             System.out.println("CTRL-F SEARCH INVOKED -- BIND ME");
             keyEvent.consume();
-        }));
+        }));*/
 
-        KeyCodeCombination annotCombination = new KeyCodeCombination(KeyCode.A, KeyCombination.SHIFT_ANY);
+        KeyCodeCombination annotCombination = new KeyCodeCombination(KeyCode.A, KeyCombination.SHIFT_DOWN);
 
         Nodes.addInputMap(textArea, consume(keyPressed(annotCombination).onlyIf(keyEvent -> {
-            return textArea.getSelection().getLength() > 0; //TODO: add more control
+            return textArea.getSelection().getLength() > 0;  //TODO: add more control -- can annotate
         }), keyEvent -> {
-            System.out.println("SHIFT-A: test tree data");
-            System.out.println(AnnotationTree.categories.size());
-            AnnotationTree.categories.forEach(c -> {
-                System.out.println(c.toString());
-            });
+            new AnnotationDialog(primaryStage, textArea).showAndWait();
+            textArea.deselect();
             keyEvent.consume();
         }));
 
-        this.heightProperty().addListener((observable, oldValue, newValue) -> {
-            masterSplitPane.setPrefHeight(newValue.doubleValue());
-        });
+        this.heightProperty().addListener(
+                (observable, oldValue, newValue) -> masterSplitPane.setPrefHeight(newValue.doubleValue()));
 
         this.getChildren().addAll(mainMenuBar, masterSplitPane);
     }

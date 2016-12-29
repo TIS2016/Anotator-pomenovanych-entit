@@ -14,92 +14,63 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Window;
 
-import java.util.HashSet;
-import java.util.logging.Filter;
 
-public class CategoryDialog extends Dialog {
+public class CategoryDialog extends Dialog<CategoryObject> {
 
 	public CategoryDialog(Window owner) {
-		this.initOwner(owner);
+        super();
+        this.initOwner(owner);
 	    this.setResizable(false);
-	    this.getDialogPane().setContent(new CategoryPane(this, null, false));
+	    this.getDialogPane().setContent(new CategoryPane(this, null));
 	}
 
-	public CategoryDialog(Window owner, CategoryObject category, boolean updating) {
+	public CategoryDialog(Window owner, CategoryObject categoryObject) {
+        super();
         this.initOwner(owner);
         this.setResizable(false);
-        this.getDialogPane().setContent(new CategoryPane(this, category, updating));
+        this.getDialogPane().setContent(new CategoryPane(this, categoryObject));
     }
 	
 	private class CategoryPane extends GridPane {
 
-		public CategoryPane(CategoryDialog catDialog,
-                            CategoryObject category,
-                            boolean updating)  {
-            DialogPane categoryPane = catDialog.getDialogPane();
+		public CategoryPane(CategoryDialog categoryDialog,
+                            final CategoryObject categoryObject) {
+            super();
+            DialogPane categoryPane = categoryDialog.getDialogPane();
+            SimpleBooleanProperty invalidName = new SimpleBooleanProperty(true);
+            SimpleBooleanProperty invalidTag = new SimpleBooleanProperty(true);
+            SimpleBooleanProperty invalidColor = new SimpleBooleanProperty(true);
+
             String name_ = "", tag_ = "";
             Color color_ = Color.WHITE;
-            catDialog.setTitle("New category");
+            categoryDialog.setTitle("New Category");
 
-            if (category != null && updating) {
-                name_ = category.getName();
-                tag_ = category.getTag();
-                color_ = category.getColor();
-                catDialog.setTitle("Update category");
+            if (categoryObject != null) {
+                name_ = categoryObject.getName();
+                tag_ = categoryObject.getTag();
+                color_ = categoryObject.getColor();
+                categoryDialog.setTitle("Update Category");
             }
 
-            SimpleBooleanProperty invalidName = new SimpleBooleanProperty();
-	        invalidName.set(true);
-	        SimpleBooleanProperty invalidTag = new SimpleBooleanProperty();
-	        invalidTag.set(true);
-	        SimpleBooleanProperty invalidColor = new SimpleBooleanProperty();
-	        invalidColor.set(Color.WHITE.equals(color_));
-			
 			final TextField name = new TextField();
-			name.textProperty().addListener((ov, oldV, newV) -> {
-                invalidName.set(newV.trim().isEmpty());
-			});
+			name.textProperty().addListener((ov, oldV, newV) -> invalidName.set(newV.trim().isEmpty()));
             name.setText(name_);
 			
 		    final TextField tag = new TextField();
-		    tag.textProperty().addListener((ov, oldV, newV) -> {
-                invalidTag.set(newV.trim().isEmpty());
-			});
+		    tag.textProperty().addListener((ov, oldV, newV) -> invalidTag.set(newV.trim().isEmpty()));
             tag.setText(tag_);
 
 		    final ColorPicker colorPicker = new ColorPicker();
-            if (color_ != null)
-                colorPicker.setValue(color_);
+            colorPicker.setValue(color_);
 
-		    colorPicker.setOnAction(e -> {
-		    	invalidColor.set(Color.WHITE.equals(colorPicker.getValue()));
-		    });
-            
-			/*TextField categoryFilter = new TextField();
-			categoryFilter.setPromptText("Filter");
+            invalidColor.bind(colorPicker.valueProperty().isEqualTo(Color.WHITE));
 
-			FilteredList<TreeObject<?>> filteredList = new FilteredList<>(AnnotationTree.categories);
-			filteredList.predicateProperty().bind(Bindings.createObjectBinding(() -> {
-				return categoryFilter.getText() == null || categoryFilter.getText().trim().isEmpty() ? null :
-						(co -> {
-							return co.getParent() == null || co.getName().contains(categoryFilter.getText().trim());
-						});
-			}, categoryFilter.textProperty()));
-			*/
-		    ComboBox<TreeObject<?>> categoryBox = new ComboBox<>(category == null ? AnnotationTree.categories :
-		            new FilteredList<>(AnnotationTree.categories, treeObject -> {
-                        return !treeObject.isOnPathToRoot(category);
-                    })); //always shows root
-
-		    if (category == null)
-		        categoryBox.getSelectionModel().selectFirst();
-            else if (updating)
-                categoryBox.getSelectionModel().select(category.getParent());
+		    ComboBox<TreeObject<?>> categoryBox = new ComboBox<>(new FilteredList<>(SessionData.sortedCategories,
+                    treeObject -> !treeObject.isOnPathToRoot(categoryObject)));
+		    if (categoryObject == null)
+		        categoryBox.getSelectionModel().selectFirst(); //creating by not clicking on node
             else
-                categoryBox.getSelectionModel().select(category);
-
-			//HBox categoryHBox = new HBox(categoryBox, categoryFilter);
-			//categoryHBox.setSpacing(10);
+                categoryBox.getSelectionModel().select(categoryObject.getParent());
 
 			ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
 		    ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -108,20 +79,37 @@ public class CategoryDialog extends Dialog {
 		    Button okBtn = (Button) categoryPane.lookupButton(okButton);
 		    okBtn.disableProperty().bind(invalidColor.or(invalidName.or(invalidTag)));
 
-			okBtn.setOnAction(actionEvent -> {
-                if (category != null && updating) {
-                    category.setName(name.getText().trim());
-                    category.setTag(tag.getText().trim());
-                    category.setColor(colorPicker.getValue());
-                    category.changeParent((CategoryObject) categoryBox.getSelectionModel().getSelectedItem());
+            categoryDialog.setResultConverter(buttonType -> {
+                if (buttonType == okButton) {
+                    if (categoryObject == null) {
+                        CategoryObject co = new CategoryObject(name.getText().trim(),
+                                tag.getText(),
+                                colorPicker.getValue());
+                        ((CategoryObject) categoryBox.getValue()).getChildren().add(co);
+                        return co;
+                    }
+                    categoryObject.setFullName(name.getText().trim());
+                    categoryObject.setTag(tag.getText().trim());
+                    categoryObject.setColor(colorPicker.getValue());
+                    categoryObject.changeParent((CategoryObject) categoryBox.getValue());
+                }
+                return null;
+            });
+
+			/*okBtn.setOnAction(actionEvent -> {
+                if (categoryObject != null) {
+                    categoryObject.setFullName(name.getText().trim());
+                    categoryObject.setTag(tag.getText().trim());
+                    categoryObject.setColor(colorPicker.getValue());
+                    categoryObject.changeParent((CategoryObject) categoryBox.getValue());
                 } else {
-                    ((CategoryObject) categoryBox.getSelectionModel().
-                            getSelectedItem()).
+                    ((CategoryObject) categoryBox.getValue()).
                             getChildren().add(new CategoryObject(name.getText().trim(),
-                                                                 tag.getText(), colorPicker.getValue()));
+                                                                 tag.getText(),
+                                                                 colorPicker.getValue()));
                 }
 				actionEvent.consume();
-			});
+			});*/
 
 		    this.setPadding(new Insets(10));
             this.setHgap(10);

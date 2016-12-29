@@ -18,6 +18,7 @@ public class ConnectionDialog extends Dialog {
     private class ConnectionPane extends GridPane {
 
         public ConnectionPane(ConnectionDialog conDialog) {
+            super();
             DialogPane dialogPane = conDialog.getDialogPane();
 
             SimpleBooleanProperty invalidHost = new SimpleBooleanProperty();
@@ -44,7 +45,7 @@ public class ConnectionDialog extends Dialog {
                     invalidPort.set(true);
                 }
             });
-            portNumber.setText("10001"); //TODO: remove me
+            portNumber.setText("10000"); //TODO: remove me
 
 
             Label hostLabel = new Label("_Host:");
@@ -78,8 +79,8 @@ public class ConnectionDialog extends Dialog {
                         event.consume();
                     }
                 } catch (IOException e) {
-                    connectionError.setHeaderText("CAN'T CREATE SOCKET,");
-                    connectionError.setContentText("see source file, TODO: handle me");
+                    connectionError.setHeaderText("Can't establish connection");
+                    connectionError.setContentText("TODO: handle me");
                     connectionError.showAndWait();
                     event.consume();
                 }
@@ -96,6 +97,7 @@ public class ConnectionDialog extends Dialog {
     }
 
     public ConnectionDialog(Window owner) {
+        super();
         this.initOwner(owner);
         this.setResizable(false);
         this.setTitle("New connection");

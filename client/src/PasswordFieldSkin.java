@@ -15,8 +15,7 @@ public class PasswordFieldSkin extends TextFieldSkin {
     }
 
     @Override
-    protected  String maskText(String txt) {
-
+    protected String maskText(String txt) {
         TextField textField = this.getSkinnable();
         if (isSkinSet != null && this.isSkinSet.get() && textField instanceof PasswordField) {
             int n = textField.getLength();
