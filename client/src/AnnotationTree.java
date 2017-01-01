@@ -38,6 +38,7 @@ public class AnnotationTree extends TreeView<TreeObject<?>> {
                             .stream()
                             .map(AnnotationTree::create)
                             .collect(Collectors.toList()));
+                    item.setSelected(true);
                     item.setExpanded(true);
                 } else if (c.wasRemoved()) {
                     c.getRemoved().stream()

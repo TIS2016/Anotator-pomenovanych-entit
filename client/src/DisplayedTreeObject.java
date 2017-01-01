@@ -14,6 +14,7 @@ public abstract class DisplayedTreeObject<T extends DisplayedTreeObject<?>> exte
         DEFAULT,
         UPDATING,
     }
+
     private final ArrayList<ColorObject> colorObjects = new ArrayList<>();
     private StyledTextArea<Void, DisplayedTreeObject<?>> textArea;
     private int start, end;
@@ -26,6 +27,7 @@ public abstract class DisplayedTreeObject<T extends DisplayedTreeObject<?>> exte
         this.start = textArea.getSelection().getStart();
         this.end = textArea.getSelection().getEnd();
         this.textArea = textArea;
+        //TODO: move to treeObjectItem?
         this.selectedProperty().addListener((observable, oldValue, newValue) -> this.onSelect());
         this.init();
     }
@@ -54,50 +56,48 @@ public abstract class DisplayedTreeObject<T extends DisplayedTreeObject<?>> exte
 
     public final void onSelect() {
         Iterator<ColorObject> it = colorObjects.iterator();
-        DisplayedTreeObject<?> color1 = it.next().getLastSelectedBackreference();
-        DisplayedTreeObject<?> color2;
+        DisplayedTreeObject<?> dto1 = it.next().getLastSelectedBackreference();
+        DisplayedTreeObject<?> dto2;
         int last = this.start, i = last;
         while (it.hasNext()) {
             i++;
             ColorObject colorObject = it.next();
-            color2 = colorObject.getLastSelectedBackreference();
-            if ((color1 == null && color2 != null) || (color1 != null && !color1.equals(color2))) {
-                textArea.setStyle(last, i, color1);
-                color1 = color2;
+            dto2 = colorObject.getLastSelectedBackreference();
+            if (dto1 != null && !dto1.equals(dto2) || (dto2 != null && !dto2.equals(dto1))) {
+                textArea.setStyle(last, i, dto1);
+                dto1 = dto2;
                 last = i;
             }
         }
-        if (i++ != last) {
-            textArea.setStyle(last, i, color1);
+        if (i != this.end) {
+            textArea.setStyle(last, this.end, dto1);
         }
     }
 
     public final void onDelete() {
-        //TODO: status if was already deleted
         Iterator<ColorObject> it = colorObjects.iterator();
-        DisplayedTreeObject<?> color1;
-        DisplayedTreeObject<?> color2;
+        DisplayedTreeObject<?> dto1;
+        DisplayedTreeObject<?> dto2;
         {
             ColorObject first = it.next();
             first.getBackreferences().remove(this);
-            color1 = first.getLastBackreference();
+            dto1 = first.getLastBackreference();
         }
         int last = this.start, i = last;
         while (it.hasNext()) {
             i++;
             ColorObject colorObject = it.next();
             colorObject.getBackreferences().remove(this);
-            color2 = colorObject.getLastBackreference();
-            if ((color1 == null && color2 != null) || (color1 != null && !color1.equals(color2))) {
-                textArea.setStyle(last, i, color1);
-                color1 = color2;
+            dto2 = colorObject.getLastSelectedBackreference();
+            if (dto1 != null && !dto1.equals(dto2) || (dto2 != null && !dto2.equals(dto1))) {
+                textArea.setStyle(last, i, dto1);
+                dto1 = dto2;
                 last = i;
             }
         }
-        if (i++ != last) {
-            textArea.setStyle(last, i, color1);
+        if (i != this.end) {
+            textArea.setStyle(last, this.end, dto1);
         }
-        this.getChildren().forEach(dto -> ((DisplayedTreeObject ) dto).onDelete());
     }
 
     public abstract SimpleObjectProperty<Color> colorProperty();

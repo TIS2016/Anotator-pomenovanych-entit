@@ -11,7 +11,7 @@ import java.util.List;
 public final class AnnotationObject extends DisplayedTreeObject<ReferenceObject> {
 
     private List<String> links = new ArrayList<>();
-    private String description = "";
+    private String description;
 
     public AnnotationObject(final StyledTextArea<Void, DisplayedTreeObject<?>> textArea,
                             final CategoryObject categoryObject,

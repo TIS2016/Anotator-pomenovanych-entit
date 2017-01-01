@@ -44,6 +44,12 @@ public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T>
         super(treeObject);
 
         treeObject.selectedProperty().bind(this.selectedProperty());
+        //TODO?: rewrite as following
+        /*if (treeObject instanceof DisplayedTreeObject) {
+            ((DisplayedTreeObject) treeObject).setItem(this);
+            this.selectedProperty().addListener(((observable, oldValue, newValue) -> ((DisplayedTreeObject) treeObject).onSelect()));
+        }*/
+
         this.setFilteredChildren();
         this.filteredChildren.predicateProperty().bind(Bindings.createObjectBinding(() -> child -> {
                 if (child != null) {
