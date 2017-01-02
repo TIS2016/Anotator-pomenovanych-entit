@@ -30,6 +30,7 @@ public class LinkListCell extends TextFieldListCell<String> {
     };
 
     public LinkListCell() {
+        super();
         this.setConverter(identityConverter);
 
         final SimpleBooleanProperty invalidUrl = new SimpleBooleanProperty(true);
@@ -84,9 +85,9 @@ public class LinkListCell extends TextFieldListCell<String> {
             actionEvent.consume();
         });
 
-        this.contextMenuProperty().bind(Bindings.createObjectBinding(() -> this.isEmpty() ? null : contextMenu, this.emptyProperty()));
-
         contextMenu.getItems().addAll(updateMenuItem, deleteMenuItem, new SeparatorMenuItem(), visitMenuItem);
+        this.contextMenuProperty().bind(Bindings.when(this.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
+        //this.contextMenuProperty().bind(Bindings.createObjectBinding(() -> this.isEmpty() ? null : contextMenu, this.emptyProperty()));
 
         this.setGraphic(link);
         this.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);

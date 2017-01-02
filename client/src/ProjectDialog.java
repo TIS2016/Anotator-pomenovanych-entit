@@ -50,9 +50,8 @@ public class ProjectDialog extends Dialog {
 	private class CreatePane extends VBox {
 
         private String trimExtension(final String fileName) {
-            String newFileName = fileName;
-            int extensionIndex = newFileName.lastIndexOf(".");
-            return extensionIndex == -1 ? newFileName : newFileName.substring(0, extensionIndex);
+            int extensionIndex = fileName.lastIndexOf(".");
+            return extensionIndex == -1 ? fileName : fileName.substring(0, extensionIndex);
         }
 
 		public CreatePane(ProjectDialog projectDialog,
@@ -261,7 +260,7 @@ public class ProjectDialog extends Dialog {
             nameColumn.setResizable(false);
             nameColumn.prefWidthProperty().bind(userTable.widthProperty().divide(2));
 
-            TableColumn<BaseUserData, String> privilegeColumn = new TableColumn<>("Privilege");
+            TableColumn<BaseUserData, String> privilegeColumn = new TableColumn<>("Privileges");
             privilegeColumn.setStyle("-fx-alignment: center;");
             privilegeColumn.setCellFactory(tc -> new PrivilegeCell());
             privilegeColumn.setCellValueFactory(new PropertyValueFactory<>("privileges"));

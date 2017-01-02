@@ -2,6 +2,8 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.ComboBoxListCell;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Window;
 import org.fxmisc.richtext.StyledTextArea;
@@ -37,16 +39,29 @@ public class ReferenceDialog extends Dialog {
             ObservableList<TreeObject<?>> annotationObjects = new FilteredList<>(SessionData.treeObjects,
                     treeObject -> treeObject instanceof AnnotationObject);
 
-            String text_ = referenceObject != null ? referenceObject.getName() : textArea.getSelectedText();
 
-            Label referenceText = new Label(String.format("\"%s\"",
-                    text_.substring(0, Math.min(text_.length(), TreeObject.MAX_DISPLAYED_LEGTH))));
+            Label referenceText = new Label();
+            referenceText.setWrapText(true);
+            referenceText.setEllipsisString("...\"");
+            referenceText.setMaxHeight(50);
 
             ComboBox<TreeObject<?>> annotationBox = new ComboBox<>(annotationObjects);
-            if (referenceObject != null)
+            if (referenceObject != null) {
+                referenceText.setText(referenceObject.getName());
                 annotationBox.getSelectionModel().select(referenceObject.getParent());
-            else
+            } else {
+                referenceText.setText(textArea.getSelectedText());
                 annotationBox.getSelectionModel().selectFirst();
+            }
+            referenceText.prefWidthProperty().bind(annotationBox.prefWidthProperty());
+
+            annotationBox.setPrefWidth(150);
+            annotationBox.setMaxHeight(25);
+            annotationBox.setCellFactory(lv -> {
+                ComboBoxListCell<TreeObject<?>> cell = new ComboBoxListCell<>();
+                cell.setPrefSize(150, 25);
+                return cell;
+            });
 
             ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
             ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -58,7 +73,7 @@ public class ReferenceDialog extends Dialog {
             okBtn.setOnAction(actionEvent -> {
                 if (referenceObject != null) { //update
                     referenceObject.setStatus(DisplayedTreeObject.Status.UPDATING);
-                    referenceObject.changeParent((AnnotationObject) annotationBox.getValue());
+                    referenceObject.changeParent(annotationBox.getValue());
                     referenceObject.setStatus(DisplayedTreeObject.Status.DEFAULT);
                 } else { //create
                     AnnotationObject parent = (AnnotationObject) annotationBox.getValue();

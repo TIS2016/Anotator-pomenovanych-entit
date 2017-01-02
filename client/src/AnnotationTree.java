@@ -1,3 +1,4 @@
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
@@ -64,28 +65,11 @@ public class AnnotationTree extends TreeView<TreeObject<?>> {
 
         root.getChildren().add(foo);
 
-        TreeObjectItem<TreeObject<?>> rootItem = AnnotationTree.create(root); //automatically constructs the whole tree
-
-        ContextMenu categoryMenu = new ContextMenu();
-        MenuItem categoryMenuItem = new MenuItem("New category");
-        categoryMenuItem.setOnAction(actionEvent -> {
-            new CategoryDialog(parent).showAndWait();
-            actionEvent.consume();
-        });
-
-        categoryMenu.getItems().add(categoryMenuItem);
-
-        this.setOnMouseClicked(mouseEvent -> {
-            if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                categoryMenu.show(this.parent, mouseEvent.getScreenX(), mouseEvent.getScreenY());
-            }
-            mouseEvent.consume();
-        });
+        TreeObjectItem<TreeObject<?>> rootItem = AnnotationTree.create(root);
 
         this.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.DELETE) {
-                ObservableList<TreeItem<TreeObject<?>>> tmp = FXCollections.observableArrayList(this.getSelectionModel().getSelectedItems());
-                tmp.filtered(item -> item != this.getRoot()).forEach(item -> {
+                FXCollections.observableArrayList(this.getSelectionModel().getSelectedItems()).forEach(item -> { //cant use filter
                     TreeObject<?> value = item.getValue();
                     if (item.getParent() != null) {
                         item.getParent().getValue().getChildren().remove(value);

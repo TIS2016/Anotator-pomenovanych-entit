@@ -1,4 +1,4 @@
-import javafx.beans.binding.Bindings;
+import com.sun.istack.internal.NotNull;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -11,21 +11,13 @@ import javafx.collections.ObservableList;
 public abstract class TreeObject<T extends TreeObject<?>> {
 
     private final SimpleStringProperty nameProperty = new SimpleStringProperty();
-    private final SimpleStringProperty fullNameProperty = new SimpleStringProperty();
     private final ObservableList<T> children = FXCollections.observableArrayList();
     private final SimpleObjectProperty<TreeObject<?>> parentProperty = new SimpleObjectProperty<>();
     private ListChangeListener<TreeObject<?>> listener;
     private final SimpleBooleanProperty selectedProperty = new SimpleBooleanProperty();
 
-    public static final int MAX_DISPLAYED_LEGTH = 100;
-
-    public TreeObject(String name) {
-        this.setFullName(name);
-
-        this.nameProperty.bind(Bindings.createObjectBinding(() -> {
-            String fullName = this.fullNameProperty.get();
-            return fullName != null ? fullName.substring(0, Math.min(fullName.length(), MAX_DISPLAYED_LEGTH)) : "";
-        }, this.fullNameProperty));
+    public TreeObject(@NotNull String name) {
+        this.setName(name);//.replace("\n", "\\n"));
 
         this.children.addListener((ListChangeListener.Change<? extends TreeObject<?>> c) -> {
             while (c.next()) {
@@ -66,29 +58,25 @@ public abstract class TreeObject<T extends TreeObject<?>> {
         return false;
     }
 
-    public final String getName() {
+    public final void setName(String name) {
+        this.nameProperty.set(name);
+    }
+
+    public String getName() {
         return this.nameProperty.get();
-    }
-
-    public final void setFullName(String name) {
-        this.fullNameProperty.set(name);
-    }
-
-    public final String getFullName() {
-        return this.fullNameProperty.get();
     }
 
     public final SimpleObjectProperty<TreeObject<?>> parentProperty() {
         return this.parentProperty;
     }
 
-    public final void changeParent(TreeObject<TreeObject<?>> newParent) {
+    public final <S extends TreeObject<?>> void changeParent(TreeObject<S> newParent) {
         TreeObject<? extends TreeObject<?>> oldParent = this.getParent();
         if (oldParent != newParent) {
             this.children.removeListener(this.listener);
             this.listener = null;
             oldParent.getChildren().remove(this);
-            newParent.getChildren().add(this);
+            newParent.getChildren().add((S) this);
         }
     }
 

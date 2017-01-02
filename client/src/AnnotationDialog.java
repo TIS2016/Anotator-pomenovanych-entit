@@ -62,51 +62,51 @@ public class AnnotationDialog extends Dialog {
                 text_ = textArea.getSelectedText();
             }
 
-            //TODO: better solution
-            final Label annotationText = new Label(String.format("\"%s\"",
-                    text_.substring(0, Math.min(text_.length(), TreeObject.MAX_DISPLAYED_LEGTH))));
-
-
             ComboBox<TreeObject<?>> categoryBox = new ComboBox<>(new FilteredList<>(SessionData.sortedCategories,
                     treeObject -> treeObject instanceof CategoryObject && treeObject.getParent() != null));
-            if (annotationObject != null)
+            if (annotationObject != null) {
                 categoryBox.getSelectionModel().select(annotationObject.getParent());
-            else
+            } else {
                 categoryBox.getSelectionModel().selectFirst();
-
+            }
 
 		    final TextArea descriptionTextArea = new TextArea();
             descriptionTextArea.setPrefRowCount(5);
             descriptionTextArea.setPrefColumnCount(12);
             descriptionTextArea.setText(descriptionTextArea_);
 
-			final ListView<String> linkListView = new ListView<>();
-            linkListView.setEditable(true);
-            linkListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-            linkListView.setCellFactory(c -> new LinkListCell());
-            linkListView.setItems(links_);
-            linkListView.setPrefHeight(150);
+			final ListView<String> linkList = new ListView<>();
+            linkList.setEditable(true);
+            linkList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            linkList.setCellFactory(c -> new LinkListCell());
+            linkList.setItems(links_);
+            linkList.setPrefHeight(100);
 
             KeyCodeCombination selectAllCombination = new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN);
-            Nodes.addInputMap(linkListView, consume(keyPressed(selectAllCombination),
-                              keyEvent -> linkListView.getSelectionModel().selectAll()));
+            Nodes.addInputMap(linkList, consume(keyPressed(selectAllCombination),
+                              keyEvent -> linkList.getSelectionModel().selectAll()));
 
-            linkListView.setOnKeyPressed(keyEvent -> {
+            linkList.setOnKeyPressed(keyEvent -> {
                 if (keyEvent.getCode() == KeyCode.DELETE) {
-                    linkListView.getItems().removeAll(linkListView.getSelectionModel().getSelectedItems());
-                    linkListView.getSelectionModel().clearSelection();
+                    linkList.getItems().removeAll(linkList.getSelectionModel().getSelectedItems());
+                    linkList.getSelectionModel().clearSelection();
                 }
                 keyEvent.consume();
             });
 
-            final Button addLink = new Button("Add link");
+            final Label annotationText = new Label(text_);
+            annotationText.setWrapText(true);
+            annotationText.setMaxHeight(50);
+            annotationText.prefWidthProperty().bind(linkList.widthProperty());
+
+            final Button addLink = new Button("Add Link");
             addLink.setOnAction(actionEvent -> {
-                linkListView.getItems().addAll(AnnotationPane.DEFAULT_LINK_STRING);
-                int last = linkListView.getItems().size() - 1;
-                linkListView.layout();
-                linkListView.scrollTo(last);
-                linkListView.edit(last);
-                linkListView.getSelectionModel().clearSelection();
+                linkList.getItems().addAll(AnnotationPane.DEFAULT_LINK_STRING);
+                int last = linkList.getItems().size() - 1;
+                linkList.layout();
+                linkList.scrollTo(last);
+                linkList.edit(last);
+                linkList.getSelectionModel().clearSelection();
                 actionEvent.consume();
             });
 
@@ -115,12 +115,12 @@ public class AnnotationDialog extends Dialog {
 		    annotPane.getButtonTypes().setAll(okButton, cancelBtn);
 		    Button okBtn = (Button) annotPane.lookupButton(okButton);
 
-			Button categoryButton = new Button("New category");
+			Button categoryButton = new Button("New Category");
 			categoryButton.visibleProperty().bind(new SimpleBooleanProperty(true)); //TODO: visible only if has edit rights
 			categoryButton.setOnAction(actionEvent -> {
 				new CategoryDialog(annotationDialog.getOwner())
                         .showAndWait()
-                        .filter(co -> co != null) //select newly created category
+                        .filter(co -> co != null)
                         .ifPresent(co -> categoryBox.getSelectionModel().select(co));
 				actionEvent.consume();
 			});
@@ -132,9 +132,9 @@ public class AnnotationDialog extends Dialog {
 			okBtn.setOnAction(actionEvent -> {
                 if (annotationObject != null) { //update annotation
                     annotationObject.setStatus(DisplayedTreeObject.Status.UPDATING);
-                    annotationObject.setLinks(linkListView.getItems().stream().collect(Collectors.toList()));
+                    annotationObject.setLinks(linkList.getItems().stream().collect(Collectors.toList()));
                     annotationObject.setDescription(descriptionTextArea.getText());
-                    annotationObject.changeParent((CategoryObject) categoryBox.getValue());
+                    annotationObject.changeParent(categoryBox.getValue());
                     annotationObject.setStatus(DisplayedTreeObject.Status.DEFAULT);
                 } else { //create new annotation
                     CategoryObject parent = (CategoryObject) categoryBox.getValue();
@@ -142,18 +142,14 @@ public class AnnotationDialog extends Dialog {
                             textArea,
                             parent,
                             descriptionTextArea.getText(),
-                            linkListView.getItems().stream().collect(Collectors.toList()));
+                            linkList.getItems().stream().collect(Collectors.toList()));
                     parent.add(ao);
                 }
 				actionEvent.consume();
 			});
 
-            VBox linksBox = new VBox(linkListView, addLink);
+            VBox linksBox = new VBox(linkList, addLink);
             linksBox.setSpacing(10);
-
-            annotationText.setWrapText(true);
-            annotationText.maxWidth(linkListView.getMaxWidth());
-            annotationText.setMaxHeight(100);
 
 		    this.setPadding(new Insets(10));
             this.setHgap(10);
@@ -166,6 +162,30 @@ public class AnnotationDialog extends Dialog {
             this.add(linksBox, 1, 2);
             this.add(new Label("Description: "), 0, 3);
             this.add(descriptionTextArea, 1, 3);
+
+            if (annotationObject != null) {
+                final ListView<ReferenceObject> referenceList = new ListView<>();
+                referenceList.setEditable(true);
+                referenceList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                referenceList.setCellFactory(lv -> new ReferenceCell(annotationDialog.getOwner()));
+                referenceList.setPrefHeight(100);
+                referenceList.setItems(annotationObject.getChildren());
+
+                Nodes.addInputMap(referenceList, consume(keyPressed(selectAllCombination),
+                        keyEvent -> referenceList.getSelectionModel().selectAll()));
+
+                referenceList.setOnKeyPressed(keyEvent -> {
+                    if (keyEvent.getCode() == KeyCode.DELETE) {
+                        FXCollections.observableArrayList(referenceList.getSelectionModel().getSelectedItems())
+                                .forEach(ref -> ref.getParent().getChildren().remove(ref));
+                        referenceList.getSelectionModel().clearSelection();
+                    }
+                    keyEvent.consume();
+                });
+
+                this.add(new Label("References: "), 0, 4);
+                this.add(referenceList, 1, 4);
+            }
 		}
 	}
 }

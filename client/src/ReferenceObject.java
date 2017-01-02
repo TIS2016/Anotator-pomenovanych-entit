@@ -15,17 +15,17 @@ public class ReferenceObject extends DisplayedTreeObject<DisplayedTreeObject<?>>
     }
 
     @Override
-    public void add(TreeObject<?> item) throws IllegalStateException {
+    public void add(DisplayedTreeObject<?> item) throws IllegalStateException {
         throw new IllegalStateException("References can't have children");
     }
 
     @Override
-    public void addAll(TreeObject<?>... items) throws IllegalStateException {
+    public void addAll(DisplayedTreeObject<?>... items) throws IllegalStateException {
         throw new IllegalStateException("References can't have children");
     }
 
     @Override
-    public ObservableList<TreeObject<?>> getChildren() {
+    public ObservableList<DisplayedTreeObject<?>> getChildren() {
         return FXCollections.emptyObservableList();
     }
 

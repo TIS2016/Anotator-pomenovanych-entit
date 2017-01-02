@@ -44,7 +44,7 @@ public class MainLayout extends VBox {
         textArea.setUseInitialStyleForInsertion(false);
         textArea.setEditable(false);
         textArea.setParagraphGraphicFactory(LineNumberFactory.get(textArea));
-        textArea.setStyle("-fx-font-size: 14;"); //TODO: option?
+        textArea.setStyle("-fx-font-size: 13;"); //TODO: options?
         textArea.insertText(0, "The quick brown fox jumps over the lazy dog\n" +
                 "The quick brown fox jumps over the lazy dog\n" +
                 "The quick brown fox jumps over the lazy dog\n" +
@@ -134,6 +134,7 @@ public class MainLayout extends VBox {
         deleteMenuItem.setOnAction(actionEvent -> {
             DisplayedTreeObject treeObject = (DisplayedTreeObject) contextMenu.getUserData();
             treeObject.getParent().getChildren().remove(treeObject);
+            treeObject.clearChildren();
             actionEvent.consume();
         });
 

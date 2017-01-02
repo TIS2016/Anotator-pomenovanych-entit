@@ -8,7 +8,7 @@ import java.util.Iterator;
 /**
  * Created by michal on 12/14/16.
  */
-public abstract class DisplayedTreeObject<T extends DisplayedTreeObject<?>> extends TreeObject<TreeObject<?>> {
+public abstract class DisplayedTreeObject<T extends DisplayedTreeObject<?>> extends TreeObject<T> {
 
     public enum Status {
         DEFAULT,
@@ -44,6 +44,11 @@ public abstract class DisplayedTreeObject<T extends DisplayedTreeObject<?>> exte
             colorObjects.add(colorObject);
         }
         textArea.setStyle(this.start, this.end, this);
+    }
+
+    @Override
+    public final String getName() {
+        return String.format("[%d:%d] %s", this.start, this.end, super.getName());
     }
 
     public final Status getStatus() {

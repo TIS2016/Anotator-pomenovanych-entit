@@ -13,6 +13,7 @@ public class PrivilegeCell extends TableCell<BaseUserData, String> {
     private CheckComboBox<String> checkComboBox = new CheckComboBox<>();
 
     public PrivilegeCell() {
+        super();
         checkComboBox.getItems().addAll("reannot", "annot", "edit");
         IndexedCheckModel<String> model = checkComboBox.getCheckModel();
 

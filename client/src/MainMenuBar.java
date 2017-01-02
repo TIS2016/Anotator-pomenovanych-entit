@@ -146,15 +146,15 @@ public class MainMenuBar extends MenuBar {
         final Menu annotMenu = new Menu("_Annotations");
         annotMenu.disableProperty().bind(SessionData.hasActiveSession.not());
 
-        final MenuItem cateNew = new MenuItem("Add _Category");
+        final MenuItem cateNew = new MenuItem("New _Category");
         cateNew.setOnAction(actionEvent -> {
             CategoryDialog categoryDialog = new CategoryDialog(primaryStage);
             categoryDialog.showAndWait();
             actionEvent.consume();
         });
 
-        final MenuItem annotNew = new MenuItem("Add _Annotation");
-        //TODO: more cleanly
+        final MenuItem annotNew = new MenuItem("New _Annotation");
+        //TODO: clean this
         final StyledTextArea<Void, DisplayedTreeObject<?>> textArea =
                 ((VirtualizedScrollPane<StyledTextArea<Void, DisplayedTreeObject<?>>>)
                 ((SplitPane) masterSplitPane.getItems().get(0)).getItems().get(0)).getContent();
@@ -168,7 +168,7 @@ public class MainMenuBar extends MenuBar {
             actionEvent.consume();
         });
 
-        final MenuItem refNew = new MenuItem("Add _Reference");
+        final MenuItem refNew = new MenuItem("New _Reference");
         refNew.disableProperty().bind(Bindings.createBooleanBinding(
                 () -> selectedProperty.getValue().getLength() == 0,
                 selectedProperty));

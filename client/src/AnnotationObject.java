@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by michal on 11/28/16.
  */
-public final class AnnotationObject extends DisplayedTreeObject<ReferenceObject> {
+public class AnnotationObject extends DisplayedTreeObject<ReferenceObject> {
 
     private List<String> links = new ArrayList<>();
     private String description;

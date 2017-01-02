@@ -1,6 +1,5 @@
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.input.MouseButton;
@@ -11,6 +10,8 @@ import javafx.scene.input.MouseButton;
 public class TreeObjectCell<T extends TreeObject<?>> extends CheckBoxTreeCell<T> {
 
     public TreeObjectCell(AnnotationTree at) {
+        super();
+
         ContextMenu contextMenu = new ContextMenu();
 
         this.styleProperty().bind(Bindings.createObjectBinding(() -> {
@@ -34,22 +35,19 @@ public class TreeObjectCell<T extends TreeObject<?>> extends CheckBoxTreeCell<T>
                 new AnnotationDialog(at.parent, (AnnotationObject) item).showAndWait();
             } else if (item instanceof ReferenceObject) {
                 new ReferenceDialog(at.parent, (ReferenceObject) item).showAndWait();
-            } else {
-                throw new AssertionError(String.format("Unknown object type: %s", item.getClass()));
             }
             at.getSelectionModel().clearSelection();
             actionEvent.consume();
         });
 
         updateMenuItem.visibleProperty().bind(Bindings.createBooleanBinding(
-                () -> at.getRoot() != this.getTreeItem(),// && !(this.getItem() instanceof ReferenceObject),
+                () -> at.getRoot() != this.getTreeItem(),
                 this.selectedProperty(), at.rootProperty()));
 
         MenuItem deleteMenuItem = new MenuItem("Delete");
         deleteMenuItem.setOnAction(actionEvent -> {
-            //?
-            ObservableList<TreeItem<TreeObject<?>>> tmp = FXCollections.observableArrayList(at.getSelectionModel().getSelectedItems());
-            tmp.filtered(item -> item != at.getRoot()).forEach(item -> {
+            System.out.println("abc");
+            FXCollections.observableArrayList(at.getSelectionModel().getSelectedItems()).forEach(item -> {
                 TreeObject<?> value = item.getValue();
                 if (item.getParent() != null) {
                     item.getParent().getValue().getChildren().remove(value);
@@ -64,34 +62,26 @@ public class TreeObjectCell<T extends TreeObject<?>> extends CheckBoxTreeCell<T>
                 () -> at.getRoot() != this.getTreeItem(),
                 this.selectedProperty(), at.rootProperty()));
 
-        MenuItem newCategoryMenuItem = new MenuItem("New category");
+        MenuItem newCategoryMenuItem = new MenuItem("New Category");
         newCategoryMenuItem.setOnAction(actionEvent -> {
             new CategoryDialog(at.parent, null).showAndWait();
             at.getSelectionModel().clearSelection();
             actionEvent.consume();
         });
 
-        this.onMouseClickedProperty().bind(Bindings.createObjectBinding(() -> {
-            T item = this.getItem();
-            return item != null && this.isSelected() ? (mouseEvent -> {
-                if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                    contextMenu.show(at.parent, mouseEvent.getScreenX(), mouseEvent.getScreenY());
-                }
-                mouseEvent.consume();
-            }) : null;
-        }, this.selectedProperty(), this.itemProperty()));
+        this.setPrefHeight(25);
+        this.setWrapText(true);
 
         SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
         separatorMenuItem.visibleProperty().bind(updateMenuItem.visibleProperty().or(deleteMenuItem.visibleProperty()));
         contextMenu.getItems().addAll(newCategoryMenuItem, separatorMenuItem, updateMenuItem, deleteMenuItem);
+
+        this.contextMenuProperty().bind(Bindings.when(this.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
     }
 
     @Override
     public void updateItem(T item, boolean empty) {
         super.updateItem(item, empty);
-        this.setText(empty || item == null ? "" : item.getName());
-        /*if (item instanceof ReferenceObject) {
-            this.setGraphic(null); //no checkbox for references
-        }*/
+        this.setText(empty ? "" : item.getName());
     }
 }

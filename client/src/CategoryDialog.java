@@ -10,6 +10,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Window;
@@ -67,10 +68,18 @@ public class CategoryDialog extends Dialog<CategoryObject> {
 
 		    ComboBox<TreeObject<?>> categoryBox = new ComboBox<>(new FilteredList<>(SessionData.sortedCategories,
                     treeObject -> !treeObject.isOnPathToRoot(categoryObject)));
-		    if (categoryObject == null)
-		        categoryBox.getSelectionModel().selectFirst(); //creating by not clicking on node
-            else
+		    if (categoryObject == null) {
+                categoryBox.getSelectionModel().selectFirst();
+            } else {
                 categoryBox.getSelectionModel().select(categoryObject.getParent());
+            }
+            categoryBox.setPrefSize(150, 25);
+            categoryBox.setCellFactory(lv -> {
+                ComboBoxListCell<TreeObject<?>> cell = new ComboBoxListCell<>();
+                cell.setWrapText(true);
+                cell.setPrefSize(150, 25);
+                return cell;
+            });
 
 			ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
 		    ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -82,34 +91,20 @@ public class CategoryDialog extends Dialog<CategoryObject> {
             categoryDialog.setResultConverter(buttonType -> {
                 if (buttonType == okButton) {
                     if (categoryObject == null) {
-                        CategoryObject co = new CategoryObject(name.getText().trim(),
+                        CategoryObject co = new CategoryObject(
+                                name.getText().trim(),
                                 tag.getText(),
                                 colorPicker.getValue());
                         ((CategoryObject) categoryBox.getValue()).getChildren().add(co);
                         return co;
                     }
-                    categoryObject.setFullName(name.getText().trim());
+                    categoryObject.setName(name.getText().trim());
                     categoryObject.setTag(tag.getText().trim());
                     categoryObject.setColor(colorPicker.getValue());
-                    categoryObject.changeParent((CategoryObject) categoryBox.getValue());
+                    categoryObject.changeParent(categoryBox.getValue());
                 }
                 return null;
             });
-
-			/*okBtn.setOnAction(actionEvent -> {
-                if (categoryObject != null) {
-                    categoryObject.setFullName(name.getText().trim());
-                    categoryObject.setTag(tag.getText().trim());
-                    categoryObject.setColor(colorPicker.getValue());
-                    categoryObject.changeParent((CategoryObject) categoryBox.getValue());
-                } else {
-                    ((CategoryObject) categoryBox.getValue()).
-                            getChildren().add(new CategoryObject(name.getText().trim(),
-                                                                 tag.getText(),
-                                                                 colorPicker.getValue()));
-                }
-				actionEvent.consume();
-			});*/
 
 		    this.setPadding(new Insets(10));
             this.setHgap(10);
