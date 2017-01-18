@@ -87,7 +87,6 @@ public class LinkListCell extends TextFieldListCell<String> {
 
         contextMenu.getItems().addAll(updateMenuItem, deleteMenuItem, new SeparatorMenuItem(), visitMenuItem);
         this.contextMenuProperty().bind(Bindings.when(this.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
-        //this.contextMenuProperty().bind(Bindings.createObjectBinding(() -> this.isEmpty() ? null : contextMenu, this.emptyProperty()));
 
         this.setGraphic(link);
         this.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
@@ -104,7 +103,7 @@ public class LinkListCell extends TextFieldListCell<String> {
         if (!item.trim().isEmpty()) {
             super.commitEdit(item.trim());
         } else {
-            this.getListView().getItems().remove(this.getIndex()); //delete empty links
+            this.getListView().getItems().remove(this.getIndex()); //auto delete empty links
         }
     }
 

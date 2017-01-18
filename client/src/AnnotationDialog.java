@@ -11,7 +11,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
-import org.fxmisc.richtext.StyledTextArea;
 import org.fxmisc.wellbehaved.event.Nodes;
 
 import java.util.stream.Collectors;
@@ -22,12 +21,12 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 public class AnnotationDialog extends Dialog {
 
 
-	public AnnotationDialog(Window owner, final StyledTextArea<Void, DisplayedTreeObject<?>> textArea) {
+	public AnnotationDialog(Window owner) {
         super();
         this.initOwner(owner);
         this.setResizable(false);
 	    this.setTitle("New Annotation");
-	    this.getDialogPane().setContent(new AnnotationPane(this, textArea, null));
+	    this.getDialogPane().setContent(new AnnotationPane(this, null));
 	}
 
 	public AnnotationDialog(Window owner, AnnotationObject annotationObject) {
@@ -35,15 +34,14 @@ public class AnnotationDialog extends Dialog {
         this.initOwner(owner);
         this.setResizable(false);
         this.setTitle("Update Annotation");
-        this.getDialogPane().setContent(new AnnotationPane(this, null, annotationObject));
+        this.getDialogPane().setContent(new AnnotationPane(this, annotationObject));
     }
 	
 	private class AnnotationPane extends GridPane {
 
-        private static final String DEFAULT_LINK_STRING = "...";
+        private static final String DEFAULT_LINK = "...";
 
 		public AnnotationPane(AnnotationDialog annotationDialog,
-                              final StyledTextArea<Void, DisplayedTreeObject<?>> textArea,
 							  final AnnotationObject annotationObject) {
             super();
 			DialogPane annotPane = annotationDialog.getDialogPane();
@@ -59,7 +57,7 @@ public class AnnotationDialog extends Dialog {
                 links_ = FXCollections.observableList(annotationObject.getLinks());
                 descriptionTextArea_ = annotationObject.getDescription();
             } else {
-                text_ = textArea.getSelectedText();
+                text_ = MainLayout.textArea.getSelectedText();
             }
 
             ComboBox<TreeObject<?>> categoryBox = new ComboBox<>(new FilteredList<>(SessionData.sortedCategories,
@@ -101,7 +99,7 @@ public class AnnotationDialog extends Dialog {
 
             final Button addLink = new Button("Add Link");
             addLink.setOnAction(actionEvent -> {
-                linkList.getItems().addAll(AnnotationPane.DEFAULT_LINK_STRING);
+                linkList.getItems().addAll(AnnotationPane.DEFAULT_LINK);
                 int last = linkList.getItems().size() - 1;
                 linkList.layout();
                 linkList.scrollTo(last);
@@ -130,20 +128,20 @@ public class AnnotationDialog extends Dialog {
 
             okBtn.disableProperty().bind(categoryBox.valueProperty().isNull());
 			okBtn.setOnAction(actionEvent -> {
-                if (annotationObject != null) { //update annotation
+                if (annotationObject != null) {
                     annotationObject.setStatus(DisplayedTreeObject.Status.UPDATING);
                     annotationObject.setLinks(linkList.getItems().stream().collect(Collectors.toList()));
                     annotationObject.setDescription(descriptionTextArea.getText());
                     annotationObject.changeParent(categoryBox.getValue());
                     annotationObject.setStatus(DisplayedTreeObject.Status.DEFAULT);
-                } else { //create new annotation
+                } else {
                     CategoryObject parent = (CategoryObject) categoryBox.getValue();
-                    AnnotationObject ao = new AnnotationObject(
-                            textArea,
-                            parent,
-                            descriptionTextArea.getText(),
-                            linkList.getItems().stream().collect(Collectors.toList()));
+                    AnnotationObject ao = new AnnotationObject(parent,
+                                                               descriptionTextArea.getText(),
+                                                               linkList.getItems()
+                                                                       .stream().collect(Collectors.toList()));
                     parent.add(ao);
+                    MainLayout.textArea.deselect();
                 }
 				actionEvent.consume();
 			});

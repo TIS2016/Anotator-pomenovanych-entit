@@ -30,7 +30,7 @@ public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T>
         if (o1 instanceof CategoryObject) {
             if (o2 instanceof CategoryObject)
                 return o1.getName().compareTo(o2.getName());
-            return -1; //categories go first
+            return -1;
         }
         if (o2 instanceof CategoryObject)
             return 1;
@@ -44,24 +44,14 @@ public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T>
         super(treeObject);
 
         treeObject.selectedProperty().bind(this.selectedProperty());
-        //TODO?: rewrite as following
-        /*if (treeObject instanceof DisplayedTreeObject) {
-            ((DisplayedTreeObject) treeObject).setItem(this);
-            this.selectedProperty().addListener(((observable, oldValue, newValue) -> ((DisplayedTreeObject) treeObject).onSelect()));
-        }*/
-
-        this.setFilteredChildren();
+        this.setHiddenFieldChildren(this.filteredChildren);
         this.filteredChildren.predicateProperty().bind(Bindings.createObjectBinding(() -> child -> {
                 if (child != null) {
                     child.predicate.set(this.predicate.get());
                 }
-                if (this.predicate.get() == null) {
-                    return true;
-                }
-                if (child.getChildren().size() > 0) {
-                    return true;
-                }
-                return this.predicate.get().test(this, child.getValue());
+                return this.predicate.get() == null ||
+                       child.getChildren().size() > 0 ||
+                       this.predicate.get().test(this, child.getValue());
             }, this.predicate));
     }
 
@@ -80,10 +70,6 @@ public class TreeObjectItem<T extends TreeObject<?>> extends CheckBoxTreeItem<T>
         } catch (Exception e) {
             //e.printStackTrace();
         }
-    }
-
-    public final void setFilteredChildren() {
-        setHiddenFieldChildren(filteredChildren);
     }
 
     public ObservableList<TreeObjectItem<T>> getInternalChildren() {

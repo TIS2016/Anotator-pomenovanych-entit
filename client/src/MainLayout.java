@@ -1,4 +1,3 @@
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
@@ -18,33 +17,34 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
  */
 public class MainLayout extends VBox {
 
+    static final StyledTextArea<Void, DisplayedTreeObject<?>> textArea = new StyledTextArea<>(null, ((textFlow, s) -> {}),
+            null, (textExt, treeObject) -> {
+        if (treeObject != null) {
+            textExt.fillProperty().bind(Bindings.createObjectBinding(
+                    () -> Double.compare(treeObject.colorProperty()
+                            .get().getBrightness(), 0.6) <= 0 ? Color.WHITE : Color.BLACK,
+                    treeObject.colorProperty()));
+            textExt.backgroundColorProperty().bind(treeObject.colorProperty());
+        } else {
+            textExt.backgroundColorProperty().unbind();
+            textExt.setBackgroundColor(Color.WHITE);
+
+            textExt.fillProperty().unbind();
+            textExt.setFill(Color.BLACK);
+        }
+    });
+
     public MainLayout(Stage primaryStage) {
         super();
 
         final SplitPane masterSplitPane = new SplitPane();
         final SplitPane slaveSplitPane = new SplitPane();
-        StyledTextArea<Void, DisplayedTreeObject<?>> textArea = new StyledTextArea<>(null, ((textFlow, s) -> {}),
-                null, (textExt, treeObject) -> {
-            if (treeObject != null) {
-                textExt.fillProperty().bind(Bindings.createObjectBinding(
-                        () -> Double.compare(treeObject.colorProperty()
-                                .get().getBrightness(), 0.6) <= 0 ? Color.WHITE : Color.BLACK,
-                        treeObject.colorProperty()));
-                textExt.backgroundColorProperty().bind(treeObject.colorProperty());
-            } else {
-                textExt.backgroundColorProperty().unbind();
-                textExt.setBackgroundColor(Color.WHITE);
-
-                textExt.fillProperty().unbind();
-                textExt.setFill(Color.BLACK);
-            }
-        });
 
         textArea.setShowCaret(StyledTextArea.CaretVisibility.ON);
         textArea.setUseInitialStyleForInsertion(false);
         textArea.setEditable(false);
         textArea.setParagraphGraphicFactory(LineNumberFactory.get(textArea));
-        textArea.setStyle("-fx-font-size: 13;"); //TODO: options?
+        textArea.setStyle("-fx-font-size: 20;"); //TODO: options?
         textArea.insertText(0, "The quick brown fox jumps over the lazy dog\n" +
                 "The quick brown fox jumps over the lazy dog\n" +
                 "The quick brown fox jumps over the lazy dog\n" +
@@ -81,18 +81,16 @@ public class MainLayout extends VBox {
                 "The quick brown fox jumps over the lazy dog\n" +
                 "The quick brown fox jumps over the lazy dog");
 
+        textArea.selectRange(0, 0);
         textArea.setWrapText(true);
         VirtualizedScrollPane<StyledTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); //because wrap is on
-        //BUG -- horizontal scrollbar not working
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        TextArea logArea = new TextArea("TODO: log");
-        logArea.setEditable(false);
+        //log text area is added in main menubar
 
         slaveSplitPane.setOrientation(Orientation.VERTICAL);
-        slaveSplitPane.setDividerPositions(0.8);
-        slaveSplitPane.getItems().addAll(scrollPane, logArea);
+        slaveSplitPane.getItems().addAll(scrollPane);
 
         VBox treeBox = new VBox();
 
@@ -103,7 +101,7 @@ public class MainLayout extends VBox {
         TreeObjectItem<TreeObject<?>> rootItem = (TreeObjectItem<TreeObject<?>>) annotationTree.getRoot();
         rootItem.predicateProperty().bind(Bindings.createObjectBinding(() -> treeFilter.getText().trim().isEmpty() ? null :
                 TreePredicate.create(child -> child.getName().contains(treeFilter.getText().trim()))
-        , treeFilter.textProperty()));
+                , treeFilter.textProperty()));
 
         VBox.setVgrow(annotationTree, Priority.ALWAYS);
 
@@ -112,9 +110,6 @@ public class MainLayout extends VBox {
         masterSplitPane.setOrientation(Orientation.HORIZONTAL);
         masterSplitPane.setDividerPositions(0.7);
         masterSplitPane.getItems().addAll(slaveSplitPane, treeBox);
-
-        MainMenuBar mainMenuBar = new MainMenuBar(primaryStage, masterSplitPane, slaveSplitPane);
-        VBox.setVgrow(mainMenuBar, Priority.ALWAYS);
 
         ContextMenu contextMenu = new ContextMenu();
 
@@ -150,19 +145,11 @@ public class MainLayout extends VBox {
 
         referToThisMenuItem.setOnAction(actionEvent -> {
             AnnotationObject annotationObject = (AnnotationObject) contextMenu.getUserData();
-            annotationObject.getChildren().add(new ReferenceObject(textArea, annotationObject));
+            annotationObject.getChildren().add(new ReferenceObject(annotationObject));
             textArea.deselect();
             actionEvent.consume();
         });
 
-        textArea.setOnKeyPressed(keyEvent -> {
-            if (keyEvent.getCode() == KeyCode.ALT) {
-                mainMenuBar.requestFocus(); //MenuBar mnemonics
-            } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
-                Platform.exit();
-            }
-            keyEvent.consume();
-        });
         textArea.addEventHandler(MouseEvent.MOUSE_CLICKED, me -> {
             if (contextMenu.isShowing()) {
                 contextMenu.hide();
@@ -187,24 +174,25 @@ public class MainLayout extends VBox {
             me.consume();
         });
 
-        /*KeyCodeCombination searchCombination = new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN);
-        Nodes.addInputMap(textArea, consume(keyPressed(searchCombination), keyEvent -> {
-            System.out.println("CTRL-F SEARCH INVOKED -- BIND ME");
-            keyEvent.consume();
-        }));*/
-
         KeyCodeCombination annotCombination = new KeyCodeCombination(KeyCode.A, KeyCombination.SHIFT_DOWN);
 
         Nodes.addInputMap(textArea, consume(keyPressed(annotCombination).onlyIf(keyEvent -> {
             return textArea.getSelection().getLength() > 0;  //TODO: add more control -- can annotate
         }), keyEvent -> {
-            new AnnotationDialog(primaryStage, textArea).showAndWait();
-            textArea.deselect();
+            new AnnotationDialog(primaryStage).showAndWait();
             keyEvent.consume();
         }));
 
-        this.heightProperty().addListener(
-                (observable, oldValue, newValue) -> masterSplitPane.setPrefHeight(newValue.doubleValue()));
+        MainMenuBar mainMenuBar = new MainMenuBar(primaryStage, masterSplitPane, slaveSplitPane);
+        VBox.setVgrow(mainMenuBar, Priority.ALWAYS);
+        textArea.setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.ALT) {
+                mainMenuBar.requestFocus();
+            }
+            keyEvent.consume();
+        });
+
+        masterSplitPane.prefHeightProperty().bind(this.heightProperty());
 
         this.getChildren().addAll(mainMenuBar, masterSplitPane);
     }

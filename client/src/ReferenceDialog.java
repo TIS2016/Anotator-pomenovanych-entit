@@ -3,22 +3,20 @@ import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxListCell;
-import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Window;
-import org.fxmisc.richtext.StyledTextArea;
 
 /**
  * Created by michal on 12/28/16.
  */
 public class ReferenceDialog extends Dialog {
 
-    public ReferenceDialog(Window owner, StyledTextArea<Void, DisplayedTreeObject<?>> textArea) {
+    public ReferenceDialog(Window owner) {
         super();
         this.initOwner(owner);
         this.setResizable(false);
         this.setTitle("New Reference");
-        this.getDialogPane().setContent(new ReferencePane(this, textArea, null));
+        this.getDialogPane().setContent(new ReferencePane(this, null));
     }
 
     public ReferenceDialog(Window owner, ReferenceObject referenceObject) {
@@ -26,13 +24,12 @@ public class ReferenceDialog extends Dialog {
         this.initOwner(owner);
         this.setResizable(false);
         this.setTitle("Update Reference");
-        this.getDialogPane().setContent(new ReferencePane(this, null, referenceObject));
+        this.getDialogPane().setContent(new ReferencePane(this, referenceObject));
     }
 
     private class ReferencePane extends GridPane {
 
         public ReferencePane(final ReferenceDialog referenceDialog,
-                             final StyledTextArea<Void, DisplayedTreeObject<?>> textArea,
                              final ReferenceObject referenceObject) {
             super();
             DialogPane categoryPane = referenceDialog.getDialogPane();
@@ -50,7 +47,7 @@ public class ReferenceDialog extends Dialog {
                 referenceText.setText(referenceObject.getName());
                 annotationBox.getSelectionModel().select(referenceObject.getParent());
             } else {
-                referenceText.setText(textArea.getSelectedText());
+                referenceText.setText(MainLayout.textArea.getSelectedText());
                 annotationBox.getSelectionModel().selectFirst();
             }
             referenceText.prefWidthProperty().bind(annotationBox.prefWidthProperty());
@@ -77,8 +74,9 @@ public class ReferenceDialog extends Dialog {
                     referenceObject.setStatus(DisplayedTreeObject.Status.DEFAULT);
                 } else { //create
                     AnnotationObject parent = (AnnotationObject) annotationBox.getValue();
-                    ReferenceObject ro = new ReferenceObject(textArea, parent);
+                    ReferenceObject ro = new ReferenceObject(parent);
                     parent.add(ro);
+                    MainLayout.textArea.deselect();
                 }
                 actionEvent.consume();
             });

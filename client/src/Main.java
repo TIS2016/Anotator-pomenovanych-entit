@@ -12,14 +12,21 @@ public class Main extends Application {
         launch(args);
     }
 
-    public static HostServices hostServices;
+    static HostServices hostServices;
 
     @Override
     public void start(Stage primaryStage) {
+        Controller.init();
         Main.hostServices = this.getHostServices();
+
         Scene scene = new Scene(new MainLayout(primaryStage), 800, 600);
-        primaryStage.setTitle("Testing...");
+        primaryStage.setTitle("Ape v 0.0.1");
         primaryStage.setScene(scene);
+        scene.getWindow().setOnCloseRequest(windowEvent -> {
+            if (!Controller.shutdown()) {
+                windowEvent.consume();
+            }
+        });
         primaryStage.show();
     }
 }

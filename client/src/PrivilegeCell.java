@@ -5,6 +5,8 @@ import javafx.scene.input.KeyCode;
 import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.IndexedCheckModel;
 
+import java.util.stream.Collectors;
+
 /**
  * Created by michal on 12/3/16.
  */
@@ -30,7 +32,7 @@ public class PrivilegeCell extends TableCell<BaseUserData, String> {
         });
         this.itemProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                for (int i = 0, length = newValue.length(); i < length; i++) {
+                for (int i = 0, size = newValue.length(); i < size; i++) {
                     if (newValue.charAt(i) != '-') {
                         model.check(i);
                     }
@@ -65,7 +67,7 @@ public class PrivilegeCell extends TableCell<BaseUserData, String> {
         return checkComboBox.getItems()
                 .stream()
                 .map(s -> !checkModel.isChecked(s) ? "-": String.valueOf(s.charAt(0)).toLowerCase())
-                .reduce("", String::concat);
+                .collect(Collectors.joining());
     }
 
     @Override

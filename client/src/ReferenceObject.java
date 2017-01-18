@@ -2,26 +2,24 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
-import org.fxmisc.richtext.StyledTextArea;
 
 /**
  * Created by michal on 12/1/16.
  */
 public class ReferenceObject extends DisplayedTreeObject<DisplayedTreeObject<?>> {
 
-    public ReferenceObject(StyledTextArea<Void, DisplayedTreeObject<?>> textArea,
-                            AnnotationObject annotationObject) {
-        super(textArea, annotationObject);
+    public ReferenceObject(final AnnotationObject annotationObject) {
+        super(annotationObject);
     }
 
     @Override
     public void add(DisplayedTreeObject<?> item) throws IllegalStateException {
-        throw new IllegalStateException("References can't have children");
+        throw new IllegalStateException("Reference can't have children");
     }
 
     @Override
     public void addAll(DisplayedTreeObject<?>... items) throws IllegalStateException {
-        throw new IllegalStateException("References can't have children");
+        throw new IllegalStateException("Reference can't have children");
     }
 
     @Override

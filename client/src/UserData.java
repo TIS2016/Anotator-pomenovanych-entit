@@ -1,7 +1,7 @@
 /**
  * Created by michal on 12/28/16.
  */
-//TODO: more attributes, etc.
+//TODO?: more attributes, etc.
 public class UserData extends BaseUserData {
 
     public UserData(int id, String userName, byte privileges) {

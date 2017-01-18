@@ -1,8 +1,7 @@
 import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTreeCell;
-import javafx.scene.input.MouseButton;
+
 
 /**
  * Created by michal on 11/28/16.
@@ -46,14 +45,8 @@ public class TreeObjectCell<T extends TreeObject<?>> extends CheckBoxTreeCell<T>
 
         MenuItem deleteMenuItem = new MenuItem("Delete");
         deleteMenuItem.setOnAction(actionEvent -> {
-            System.out.println("abc");
-            FXCollections.observableArrayList(at.getSelectionModel().getSelectedItems()).forEach(item -> {
-                TreeObject<?> value = item.getValue();
-                if (item.getParent() != null) {
-                    item.getParent().getValue().getChildren().remove(value);
-                }
-                value.clearChildren();
-            });
+            Controller.deleteTreeObject(at.getSelectionModel().getSelectedItems()
+                    .stream().map(item -> item.getValue()).toArray(size -> new TreeObject<?>[size]));
             at.getSelectionModel().clearSelection();
             actionEvent.consume();
         });

@@ -1,5 +1,3 @@
-import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -60,7 +58,7 @@ public class AnnotationTree extends TreeView<TreeObject<?>> {
         this.parent = parent;
         this.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        CategoryObject root = new CategoryObject("Categories", "ROOT", Color.WHITE);
+        CategoryObject root = new CategoryObject("Categories", "", Color.WHITE);
         CategoryObject foo = new CategoryObject("dummy_category", "TAG1", Color.RED);
 
         root.getChildren().add(foo);
@@ -69,13 +67,8 @@ public class AnnotationTree extends TreeView<TreeObject<?>> {
 
         this.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.DELETE) {
-                FXCollections.observableArrayList(this.getSelectionModel().getSelectedItems()).forEach(item -> { //cant use filter
-                    TreeObject<?> value = item.getValue();
-                    if (item.getParent() != null) {
-                        item.getParent().getValue().getChildren().remove(value);
-                    }
-                    value.clearChildren();
-                });
+                Controller.deleteTreeObject(this.getSelectionModel().getSelectedItems()
+                        .stream().map(item -> item.getValue()).toArray(size -> new TreeObject<?>[size]));
                 this.getSelectionModel().clearSelection();
             }
             keyEvent.consume();

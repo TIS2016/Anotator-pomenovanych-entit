@@ -13,17 +13,20 @@ import javafx.stage.Window;
  */
 public class LoginDialog extends Dialog<Boolean> {
 
-    public LoginDialog(Window owner, Connection c) {
+    public LoginDialog(Window owner) {
         super();
         this.initOwner(owner);
         this.setTitle("Login");
 
         DialogPane dialogPane = this.getDialogPane();
+
         LoginTab loginTab = new LoginTab();
         RegTab regTab = new RegTab();
+
         TabPane root = new TabPane(loginTab, regTab);
         root.setPadding(new Insets(0));
         root.getSelectionModel().select(loginTab);
+
         dialogPane.setContent(root);
 
         ButtonType okButton = new ButtonType("Ok", ButtonBar.ButtonData.OK_DONE);
@@ -31,7 +34,7 @@ public class LoginDialog extends Dialog<Boolean> {
         dialogPane.getButtonTypes().setAll(okButton, cancelBtn);
 
         Button okBtn = (Button) dialogPane.lookupButton(okButton);
-        //okBtn.disableProperty().bind(loginTab.logNotOk.or(regTab.regNotOk));
+        okBtn.disableProperty().bind(loginTab.logNotOk.or(regTab.regNotOk));
         okBtn.addEventFilter(ActionEvent.ACTION, event -> {
 
         });
@@ -61,9 +64,8 @@ public class LoginDialog extends Dialog<Boolean> {
             Label usernameLabel = new Label("Username:");
             usernameLabel.setLabelFor(username);
             SimpleBooleanProperty uNameNotOk = new SimpleBooleanProperty(true);
-            username.textProperty().addListener((ov, oldV, newV) -> {
-                uNameNotOk.set(newV.trim().isEmpty());
-            });
+            username.textProperty().addListener((ov, oldV, newV) ->
+                    uNameNotOk.set(newV.trim().isEmpty()));
 
             CheckBox showPassword = new CheckBox("Unmask");
             showPassword.setSelected(false);
@@ -71,15 +73,14 @@ public class LoginDialog extends Dialog<Boolean> {
             PasswordField password = new PasswordField();
             password.setSkin(new PasswordFieldSkin(password, showPassword));
 
-            showPassword.selectedProperty().addListener((observable, oldValue, newValue) -> {
-                password.setText(password.getText());
-            });
+            showPassword.selectedProperty().addListener((observable, oldValue, newValue) ->
+                password.setText(password.getText()));
 
             Label passwordLabel = new Label("Password:");
             usernameLabel.setLabelFor(passwordLabel);
 
-            logNotOk.bind(this.selectedProperty().and(uNameNotOk.
-                    or(password.textProperty().isEmpty())));
+            logNotOk.bind(this.selectedProperty()
+                    .and(uNameNotOk.or(password.textProperty().isEmpty())));
 
             root.setPadding(new Insets(10));
             root.setAlignment(Pos.CENTER);
@@ -90,7 +91,6 @@ public class LoginDialog extends Dialog<Boolean> {
             root.add(passwordLabel, 0, 1);
             root.add(password, 1, 1);
             root.add(showPassword, 0, 2);
-
             this.setContent(root);
         }
     }
@@ -106,56 +106,52 @@ public class LoginDialog extends Dialog<Boolean> {
 
             GridPane root = new GridPane();
 
-            TextField firstname = new TextField();
+            final TextField firstname = new TextField();
             firstname.setFocusTraversable(true);
-            Label firstnameLabel = new Label("First name:");
+            final Label firstnameLabel = new Label("First name:");
             firstnameLabel.setLabelFor(firstname);
             SimpleBooleanProperty fNameNotOk = new SimpleBooleanProperty(true);
-            firstname.textProperty().addListener((ov, oldV, newV) -> {
-                fNameNotOk.set(newV.trim().isEmpty());
-            });
+            firstname.textProperty().addListener((ov, oldV, newV) ->
+                    fNameNotOk.set(newV.trim().isEmpty()));
 
-            TextField lastname = new TextField();
+            final TextField lastname = new TextField();
             lastname.setFocusTraversable(true);
-            Label lastnameLabel = new Label("Last name:");
+            final Label lastnameLabel = new Label("Last name:");
             lastnameLabel.setLabelFor(lastname);
             SimpleBooleanProperty lNameNotOk = new SimpleBooleanProperty(true);
-            lastname.textProperty().addListener((ov, oldV, newV) -> {
-                lNameNotOk.set(newV.trim().isEmpty());
-            });
+            lastname.textProperty().addListener((ov, oldV, newV) ->
+                    lNameNotOk.set(newV.trim().isEmpty()));
 
-            TextField username = new TextField();
+            final TextField username = new TextField();
             username.setFocusTraversable(true);
-            Label usernameLabel = new Label("Username:");
+            final Label usernameLabel = new Label("Username:");
             usernameLabel.setLabelFor(username);
             SimpleBooleanProperty uNameNotOk = new SimpleBooleanProperty(true);
-            username.textProperty().addListener((ov, oldV, newV) -> {
-                uNameNotOk.set(newV.trim().isEmpty());
-            });
+            username.textProperty().addListener((ov, oldV, newV) ->
+                    uNameNotOk.set(newV.trim().isEmpty()));
 
-            TextField email = new TextField();
+            final TextField email = new TextField();
             email.setFocusTraversable(true);
-            Label emailLabel = new Label("Email:");
+            final Label emailLabel = new Label("Email:");
             emailLabel.setLabelFor(email);
             SimpleBooleanProperty emailNotOk = new SimpleBooleanProperty(true);
-            email.textProperty().addListener((ov, oldV, newV) -> {
-                emailNotOk.set(newV.trim().isEmpty());
-            });
+            email.textProperty().addListener((ov, oldV, newV) ->
+                    emailNotOk.set(newV.trim().isEmpty()));
 
-            CheckBox showPassword = new CheckBox("Unmask");
+            final CheckBox showPassword = new CheckBox("Unmask");
             showPassword.setFocusTraversable(true);
             showPassword.setSelected(false);
 
-            PasswordField password = new PasswordField();
+            final PasswordField password = new PasswordField();
             password.setFocusTraversable(true);
             password.setSkin(new PasswordFieldSkin(password, showPassword));
-            Label passwordLabel = new Label("Password:");
+            final Label passwordLabel = new Label("Password:");
             usernameLabel.setLabelFor(passwordLabel);
 
-            PasswordField confirmPassword = new PasswordField();
+            final PasswordField confirmPassword = new PasswordField();
             confirmPassword.setFocusTraversable(true);
             confirmPassword.setSkin(new PasswordFieldSkin(confirmPassword, showPassword));
-            Label confirmPasswordLabel = new Label("Confirm:");
+            final Label confirmPasswordLabel = new Label("Confirm:");
             confirmPasswordLabel.setLabelFor(confirmPassword);
 
             showPassword.selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -166,7 +162,7 @@ public class LoginDialog extends Dialog<Boolean> {
             SimpleBooleanProperty passwordNotOk = new SimpleBooleanProperty();
             passwordNotOk.bind(password.textProperty().isNotEqualTo(confirmPassword.textProperty()));
 
-            Label statusLabel = new Label("Passwords do not match");
+            final Label statusLabel = new Label("Passwords do not match");
             statusLabel.visibleProperty().bind(passwordNotOk);
             statusLabel.setTextFill(Color.RED);
 

@@ -1,9 +1,6 @@
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.control.IndexRange;
 import javafx.scene.paint.Color;
-import org.fxmisc.richtext.StyledTextArea;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Created by michal on 12/14/16.
@@ -15,25 +12,23 @@ public abstract class DisplayedTreeObject<T extends DisplayedTreeObject<?>> exte
         UPDATING,
     }
 
-    private final ArrayList<ColorObject> colorObjects = new ArrayList<>();
-    private StyledTextArea<Void, DisplayedTreeObject<?>> textArea;
+    private final ColorObject[] colorObjects;
     private int start, end;
     private Status status = Status.DEFAULT;
 
-    public DisplayedTreeObject(final StyledTextArea<Void, DisplayedTreeObject<?>> textArea,
-                               final TreeObject<?> parent) {
-        super(textArea.getSelectedText());
+    public DisplayedTreeObject(final TreeObject<?> parent) {
+        super(MainLayout.textArea.getSelectedText());
         this.setParent(parent);
-        this.start = textArea.getSelection().getStart();
-        this.end = textArea.getSelection().getEnd();
-        this.textArea = textArea;
-        //TODO: move to treeObjectItem?
+        IndexRange range = MainLayout.textArea.getSelection();
+        colorObjects = new ColorObject[range.getLength()];
+        this.start = range.getStart();
+        this.end = range.getEnd();
         this.selectedProperty().addListener((observable, oldValue, newValue) -> this.onSelect());
         this.init();
     }
 
-    private final void init() {
-        for (int i = this.start; i < this.end; i++) {
+    private void init() {
+        for (int i = this.start, j = 0; i < this.end; i++) {
             ColorObject colorObject = SessionData.colorObjects.get(i);
             if (colorObject != null) {
                 colorObject.getBackreferences().add(this);
@@ -41,9 +36,8 @@ public abstract class DisplayedTreeObject<T extends DisplayedTreeObject<?>> exte
                 colorObject = new ColorObject(i, this);
                 SessionData.colorObjects.put(i, colorObject);
             }
-            colorObjects.add(colorObject);
+            colorObjects[j++] = colorObject;
         }
-        textArea.setStyle(this.start, this.end, this);
     }
 
     @Override
@@ -60,48 +54,52 @@ public abstract class DisplayedTreeObject<T extends DisplayedTreeObject<?>> exte
     }
 
     public final void onSelect() {
-        Iterator<ColorObject> it = colorObjects.iterator();
-        DisplayedTreeObject<?> dto1 = it.next().getLastSelectedBackreference();
+        //TODO?: ASYNC
+        int it = 0;
+        DisplayedTreeObject<?> dto1 = colorObjects[it].getLastSelectedBackreference();
         DisplayedTreeObject<?> dto2;
         int last = this.start, i = last;
-        while (it.hasNext()) {
+        while (++it < colorObjects.length) {
             i++;
-            ColorObject colorObject = it.next();
-            dto2 = colorObject.getLastSelectedBackreference();
-            if (dto1 != null && !dto1.equals(dto2) || (dto2 != null && !dto2.equals(dto1))) {
-                textArea.setStyle(last, i, dto1);
+            dto2 = colorObjects[it].getLastSelectedBackreference();
+            if ((dto1 != null && !dto1.equals(dto2)) || (dto2 != null && !dto2.equals(dto1))) {
+                MainLayout.textArea.setStyle(last, i, dto1);
                 dto1 = dto2;
                 last = i;
             }
         }
         if (i != this.end) {
-            textArea.setStyle(last, this.end, dto1);
+            MainLayout.textArea.setStyle(last, this.end, dto1);
         }
     }
 
+    public final int getSize() {
+        return colorObjects.length;
+    }
+
     public final void onDelete() {
-        Iterator<ColorObject> it = colorObjects.iterator();
+        int it = 0;
         DisplayedTreeObject<?> dto1;
         DisplayedTreeObject<?> dto2;
         {
-            ColorObject first = it.next();
+            ColorObject first = colorObjects[it];
             first.getBackreferences().remove(this);
             dto1 = first.getLastBackreference();
         }
         int last = this.start, i = last;
-        while (it.hasNext()) {
+        while (++it < colorObjects.length) {
             i++;
-            ColorObject colorObject = it.next();
+            ColorObject colorObject = colorObjects[it];
             colorObject.getBackreferences().remove(this);
             dto2 = colorObject.getLastSelectedBackreference();
             if (dto1 != null && !dto1.equals(dto2) || (dto2 != null && !dto2.equals(dto1))) {
-                textArea.setStyle(last, i, dto1);
+                MainLayout.textArea.setStyle(last, i, dto1);
                 dto1 = dto2;
                 last = i;
             }
         }
         if (i != this.end) {
-            textArea.setStyle(last, this.end, dto1);
+            MainLayout.textArea.setStyle(last, this.end, dto1);
         }
     }
 

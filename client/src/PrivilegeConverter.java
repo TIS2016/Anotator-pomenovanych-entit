@@ -1,11 +1,13 @@
 import javafx.util.converter.ByteStringConverter;
 
+import java.util.UnknownFormatConversionException;
+
 /**
  * Created by michal on 12/28/16.
  */
 public final class PrivilegeConverter {
 
-    private static final char[] CHARS = new char[]{'e', 'a', 'r'};
+    private static final char[] CHARS = new char[] {'e', 'a', 'r'};
     private static final char EMPTY_CHAR = '-';
 
     private PrivilegeConverter() {}
@@ -31,7 +33,7 @@ public final class PrivilegeConverter {
         }
 
         @Override
-        public Byte fromString(String object) throws IllegalArgumentException {
+        public Byte fromString(String object) throws UnknownFormatConversionException {
             if (object != null) {
                 if (object.length() != CHARS.length) {
                     throw new IllegalArgumentException(String.format("Expected object size: %d, found: %d",
@@ -43,7 +45,7 @@ public final class PrivilegeConverter {
                     if (c == CHARS[i]) {
                         res |= (1 << i);
                     } else if (c != EMPTY_CHAR) {
-                        throw new IllegalArgumentException(String.format("Unknown character: %c", c));
+                        throw new UnknownFormatConversionException(String.format("Unknown character: %c", c));
                     }
                 }
                 return res;

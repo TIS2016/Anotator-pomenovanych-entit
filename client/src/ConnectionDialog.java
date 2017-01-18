@@ -8,7 +8,6 @@ import javafx.stage.Window;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.Socket;
 
 /**
  * Created by michal on 11/17/16.
@@ -27,14 +26,9 @@ public class ConnectionDialog extends Dialog {
             invalidPort.set(true);
 
             TextField hostName = new TextField();
-            hostName.textProperty().addListener((observable, oldValue, newValue) -> {
-                invalidHost.set(newValue.trim().isEmpty());
-            });
-            Platform.runLater(() -> {
-                    hostName.requestFocus();
-            });
-            hostName.setText("localhost"); //TODO: remove me
-
+            hostName.textProperty().addListener((observable, oldValue, newValue) ->
+                    invalidHost.set(newValue.trim().isEmpty()));
+            Platform.runLater(hostName::requestFocus);
 
             TextField portNumber = new TextField();
             portNumber.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -45,8 +39,6 @@ public class ConnectionDialog extends Dialog {
                     invalidPort.set(true);
                 }
             });
-            portNumber.setText("10000"); //TODO: remove me
-
 
             Label hostLabel = new Label("_Host:");
             hostLabel.setMnemonicParsing(true);
@@ -67,17 +59,14 @@ public class ConnectionDialog extends Dialog {
             connectBtn.disableProperty().bind(invalidPort.or(invalidHost));
             connectBtn.addEventFilter(ActionEvent.ACTION, event -> {
                 try {
+                    //TODO: use controller here
                     InetAddress host = InetAddress.getByName(hostName.getText().trim());
                     int port = Integer.parseInt(portNumber.getText().trim());
 
-                    Socket socket = new Socket(host, port);
-                    Connection c = new Connection(socket);
-
-                    LoginDialog loginDialog = new LoginDialog(conDialog.getOwner(), c);
-                    boolean ok = loginDialog.showAndWait().orElse(false); //uncomment this
-                    if (!ok) { //consume this event if we pressed Cancel in loginDialog
-                        event.consume();
-                    }
+                    new LoginDialog(conDialog.getOwner())
+                            .showAndWait()
+                            .filter(ok -> !ok)
+                            .ifPresent(notOk -> event.consume());
                 } catch (IOException e) {
                     connectionError.setHeaderText("Can't establish connection");
                     connectionError.setContentText("TODO: handle me");

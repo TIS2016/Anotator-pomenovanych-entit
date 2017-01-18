@@ -11,13 +11,12 @@ import java.util.List;
 public class AnnotationObject extends DisplayedTreeObject<ReferenceObject> {
 
     private List<String> links = new ArrayList<>();
-    private String description;
+    private String description; //TODO: use string property?
 
-    public AnnotationObject(final StyledTextArea<Void, DisplayedTreeObject<?>> textArea,
-                            final CategoryObject categoryObject,
+    public AnnotationObject(final CategoryObject categoryObject,
                             String description,
                             List<String> links) {
-        super(textArea, categoryObject);
+        super(categoryObject);
         this.description = description;
         this.links = links;
     }

@@ -29,7 +29,6 @@ public class ReferenceCell extends ListCell<ReferenceObject> {
         this.setWrapText(true);
 
         this.contextMenuProperty().bind(Bindings.when(this.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
-        //this.contextMenuProperty().bind(Bindings.createObjectBinding(() -> this.isEmpty() ? null : contextMenu, this.emptyProperty()));
         contextMenu.getItems().addAll(updateMenuItem, deleteMenuItem);
     }
 

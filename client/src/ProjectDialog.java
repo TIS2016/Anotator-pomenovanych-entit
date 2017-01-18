@@ -1,4 +1,5 @@
 import java.io.File;
+import java.util.stream.Collectors;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -114,8 +115,6 @@ public class ProjectDialog extends Dialog {
                     .addListener(((observable, oldValue, newValue) -> {
                         if (newValue != null) {
                             fileProperty.set(null);
-                            //if project admin can change name of the doc
-                            //otherwise rewrite it using String + getter/setter
                             docName.textProperty().set(newValue.getDocName());
                             docName.setDisable(true);
                         }
@@ -145,7 +144,7 @@ public class ProjectDialog extends Dialog {
 				actionEvent.consume();
 			});
 
-            final PrivilegesBox defaultPrivileges = new PrivilegesBox();
+            final DefaultPrivileges defaultPrivileges = new DefaultPrivileges();
             defaultPrivileges.getCheckModel().clearChecks();
 
 			ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
@@ -161,10 +160,10 @@ public class ProjectDialog extends Dialog {
             grid.setVgap(10);
             ColumnConstraints c1 = new ColumnConstraints();
             c1.setHalignment(HPos.LEFT);
-            c1.setPercentWidth(50); //40
+            c1.setPercentWidth(50);
             ColumnConstraints c2 = new ColumnConstraints();
             c2.setHalignment(HPos.LEFT);
-            c2.setPercentWidth(50); //60
+            c2.setPercentWidth(50);
             grid.getColumnConstraints().addAll(c1, c2);
 
             grid.add(new Label("Project name: "), 0, 0);
@@ -185,9 +184,9 @@ public class ProjectDialog extends Dialog {
 		}
 	}
 
-	private class PrivilegesBox extends CheckComboBox<String> {
+	private class DefaultPrivileges extends CheckComboBox<String> {
 
-        public PrivilegesBox() {
+        public DefaultPrivileges() {
             super();
             this.getItems().setAll("reannot", "annot", "edit");
         }
@@ -197,7 +196,7 @@ public class ProjectDialog extends Dialog {
             return this.getItems()
                     .stream()
                     .map(item -> checkedItems.contains(item) ? item.substring(0, 1) : "-")
-                    .reduce("", String::concat);
+                    .collect(Collectors.joining());
         }
     }
 
@@ -206,7 +205,7 @@ public class ProjectDialog extends Dialog {
 		public TableViewBox(ProjectDialog projectDialog, ProjectData projectData) {
             super();
 
-            //TODO: this should be initialized from server when opening this dialog!!!
+            //TODO: this should be initialized from server when opening this dialog
             FilteredList<String> filteredNames = new FilteredList<>(SessionData.userNames);
 
             SessionData.userNames.clear();
@@ -241,7 +240,8 @@ public class ProjectDialog extends Dialog {
 
             userTable.setOnKeyPressed(keyEvent -> {
                 if (keyEvent.getCode() == KeyCode.DELETE) {
-                    userTable.getItems().removeAll(userTable.getSelectionModel().getSelectedItems());
+                    FXCollections.observableArrayList(userTable.getSelectionModel().getSelectedItems()). //must copy
+                            forEach(baseUserData -> userTable.getItems().remove(baseUserData));
                     userTable.getSelectionModel().clearSelection();
                     userTable.refresh();
                 }
@@ -280,12 +280,12 @@ public class ProjectDialog extends Dialog {
                 deleteMenuItem.setOnAction(actionEvent -> {
                     tableRow.cancelEdit();
                     tableView.getItems().remove(tableRow.getItem());
+                    tableView.getSelectionModel().clearSelection();
                     tableView.refresh();
                     actionEvent.consume();
                 });
 
                 contextMenu.getItems().setAll(deleteMenuItem);
-                // Set context menu on tableRow, but use a binding to make it only show for non-empty tableRows:
                 tableRow.contextMenuProperty().bind(
                         Bindings.when(tableRow.emptyProperty())
                                 .then((ContextMenu) null)
@@ -296,19 +296,19 @@ public class ProjectDialog extends Dialog {
             
             userTable.getColumns().setAll(nameColumn, privilegeColumn);
 
-            final PrivilegesBox privilegesBox = new PrivilegesBox();
+            final DefaultPrivileges defaultPrivileges = new DefaultPrivileges();
 
             SimpleStringProperty privileges = new SimpleStringProperty();
 
-            ObservableList<String> checkedItems = privilegesBox.getCheckModel().getCheckedItems();
+            ObservableList<String> checkedItems = defaultPrivileges.getCheckModel().getCheckedItems();
             checkedItems.addListener(new ListChangeListener<String>() {
 
                 @Override
                 public void onChanged(Change<? extends String> c) {
-                    privileges.set(privilegesBox.toSimpleString());
+                    privileges.set(defaultPrivileges.toSimpleString());
                 }
             });
-            privilegesBox.getCheckModel().checkIndices(0, 1); //reannot, annot
+            defaultPrivileges.getCheckModel().checkIndices(0, 1); //reannot, annot 
 
 			final Button addUserButton = new Button("Add User");
             addUserButton.setPrefWidth(80);
@@ -321,7 +321,7 @@ public class ProjectDialog extends Dialog {
                 actionEvent.consume();
             });
 
-            HBox addUserBox = new HBox(userNamesBox, privilegesBox);
+            HBox addUserBox = new HBox(userNamesBox, defaultPrivileges);
             addUserBox.setSpacing(10);
 
             this.setSpacing(10);
@@ -342,13 +342,6 @@ public class ProjectDialog extends Dialog {
         public void updateItem(String item, boolean empty) {
             String previous = this.getItem();
             super.updateItem(item, empty);
-            if (previous == item) {
-                return;
-            }
-            /*if ((previous ==  null && item == null) ||
-                (previous != null && item != null && previous.compareTo(item) == 0)) {
-                return;
-            }*/
             if (previous != null && !this.userNames.contains(previous)) {
                 this.userNames.add(previous);
             }

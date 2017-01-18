@@ -26,7 +26,7 @@ public class ProjectSearchDialog extends Dialog {
 
             final TextField listFilter = new TextField();
             listFilter.setPromptText("Search");
-            Platform.runLater(() -> listFilter.requestFocus());
+            Platform.runLater(listFilter::requestFocus);
 
             FilteredList<ProjectData> filteredProject = new FilteredList<>(SessionData.projects);
             filteredProject.predicateProperty().bind(Bindings.createObjectBinding(
@@ -53,7 +53,7 @@ public class ProjectSearchDialog extends Dialog {
                 joinMenuItem.disableProperty().bind(Bindings.createBooleanBinding(() -> {
                     ProjectData projData = cell.getItem();
                     return projData == null ||
-                            (projData.getDefPriv() == 0 && !projData.getListedUsers().contains(SessionData.userData));
+						   (projData.getDefPriv() == 0 && !projData.getListedUsers().contains(SessionData.userData));
                 }, cell.itemProperty()));
 
 

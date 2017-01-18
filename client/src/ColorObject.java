@@ -1,7 +1,9 @@
 import javafx.beans.Observable;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.scene.paint.Color;
 import javafx.util.Callback;
 
 /**
@@ -11,6 +13,8 @@ public class ColorObject extends Object {
 
     private final Callback<DisplayedTreeObject<?>, Observable[]> extractor = displayedTreeObject ->
             new Observable[] { displayedTreeObject.selectedProperty()};
+
+    private static final SimpleObjectProperty<Color> defaultColorProperty = new SimpleObjectProperty<>(Color.WHITE);
 
     private final ObservableList<DisplayedTreeObject<?>> baseReferences = FXCollections.observableArrayList(extractor);
     private final ObservableList<DisplayedTreeObject<?>> selectedBackreferences = new FilteredList<>(baseReferences, br -> br.isSelected());
@@ -28,6 +32,14 @@ public class ColorObject extends Object {
     public final DisplayedTreeObject<?> getLastBackreference() {
         int size = this.baseReferences.size();
         return size == 0 ? null : this.baseReferences.get(size - 1);
+    }
+
+    public final SimpleObjectProperty<Color> colorProperty() {
+        return this.getLastSelectedBackreference() == null ? defaultColorProperty : this.getLastSelectedBackreference().colorProperty();
+    }
+
+    public final boolean isOverlapping() {
+        return this.selectedBackreferences.size() > 1;
     }
 
     public final DisplayedTreeObject<?> getLastSelectedBackreference() {

@@ -15,7 +15,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Window;
 
-
 public class CategoryDialog extends Dialog<CategoryObject> {
 
 	public CategoryDialog(Window owner) {
@@ -25,7 +24,8 @@ public class CategoryDialog extends Dialog<CategoryObject> {
 	    this.getDialogPane().setContent(new CategoryPane(this, null));
 	}
 
-	public CategoryDialog(Window owner, CategoryObject categoryObject) {
+	public CategoryDialog(Window owner,
+                          CategoryObject categoryObject) {
         super();
         this.initOwner(owner);
         this.setResizable(false);
@@ -100,7 +100,13 @@ public class CategoryDialog extends Dialog<CategoryObject> {
                     }
                     categoryObject.setName(name.getText().trim());
                     categoryObject.setTag(tag.getText().trim());
-                    categoryObject.setColor(colorPicker.getValue());
+                    if (!categoryObject.getColor().equals(colorPicker.getValue())) {
+                        categoryObject.setColor(colorPicker.getValue());
+                        int caretPosition = MainLayout.textArea.getCaretPosition();
+                        MainLayout.textArea.selectAll(); //trick to force recolor
+                        MainLayout.textArea.deselect();
+                        MainLayout.textArea.selectRange(caretPosition, caretPosition);
+                    }
                     categoryObject.changeParent(categoryBox.getValue());
                 }
                 return null;
@@ -109,6 +115,7 @@ public class CategoryDialog extends Dialog<CategoryObject> {
 		    this.setPadding(new Insets(10));
             this.setHgap(10);
             this.setVgap(10);
+
             this.add(new Label("Name: "), 0, 0);
             this.add(name, 1, 0);
             this.add(new Label("Tag: "),0,1);

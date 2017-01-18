@@ -3,7 +3,6 @@ import java.util.function.Predicate;
 /**
  * Source: http://www.kware.net/?p=204
  */
-
 @FunctionalInterface
 public interface TreePredicate<T extends TreeObject<?>> {
 

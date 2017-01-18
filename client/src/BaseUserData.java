@@ -7,7 +7,7 @@ import javafx.beans.property.SimpleStringProperty;
 public class BaseUserData {
 
     private int id;
-    private final SimpleStringProperty userName = new SimpleStringProperty();
+    private final SimpleStringProperty userName = new SimpleStringProperty(); //properties necessary in project
     private final SimpleObjectProperty<String> privileges = new SimpleObjectProperty<>();
 
     public BaseUserData(int id, String userName, byte privileges) {
