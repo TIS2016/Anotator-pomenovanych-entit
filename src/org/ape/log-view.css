@@ -1,0 +1,7 @@
+.log-view .list-cell, .log-view .list-cell:empty {
+    -fx-background-color: white;
+}
+
+.log-view .list-cell:selected {
+    -fx-background-color: -fx-selection-bar;
+}
