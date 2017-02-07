@@ -67,13 +67,10 @@ public class SettingsDialog extends Dialog {
             final CheckBox promptDel = new CheckBox("Show delete dialog");
             promptDel.setSelected(Controller.isPromptDel());
 
-            final TextField delimiterField = new TextField();
-            delimiterField.setPromptText("Pattern");
+            final TextField tokenField = new TextField();
+            tokenField.setPromptText("Pattern");
 
-            final Label delimiterLabel = new Label("Delimiters:");
-            delimiterLabel.setLabelFor(delimiterField);
-
-            delimiterField.textProperty().addListener(((observable, oldValue, newValue) -> {
+            tokenField.textProperty().addListener(((observable, oldValue, newValue) -> {
                 try {
                     if (newValue.isEmpty()) {
                         pattern.set(null);
@@ -84,7 +81,7 @@ public class SettingsDialog extends Dialog {
                     pattern.set(null);
                 }
             }));
-            delimiterField.setText(Controller.getDelimiterPattern().toString());
+            tokenField.setText(Controller.getTokenPattern().toString());
 
             final Label statusLabel = new Label("Invalid pattern");
             statusLabel.visibleProperty().bind(pattern.isNull());
@@ -150,8 +147,8 @@ public class SettingsDialog extends Dialog {
             this.add(wrapText, 0, 2);
             this.add(new Label("Auto-select:"), 0, 3);
             this.add(autoSelectBox, 1, 3);
-            this.add(new Label("Delimiters:"), 0, 4);
-            this.add(delimiterField, 1, 4);
+            this.add(new Label("Tokens:"), 0, 4);
+            this.add(tokenField, 1, 4);
             this.add(autoStart, 0, 5);
             this.add(selectFileBox, 1, 5);
             this.add(promptDel, 0, 6);

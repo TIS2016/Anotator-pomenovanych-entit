@@ -30,7 +30,7 @@ public final class Controller {
     private static final String P_FONT_SIZE = "font-size";
     private static final String P_WORD_WRAP = "text-wrap";
     private static final String P_AUTO_SELECT = "auto-select";
-    private static final String P_DELIMS = "delimiters";
+    private static final String P_TOKENS = "tokens";
     private static final String P_TREE_POS = "treeObjects-pos";
     private static final String P_LOG_POS = "log-pos";
     private static final String P_START_FILE = "start-file";
@@ -43,7 +43,7 @@ public final class Controller {
     private static final String D_FONT_SIZE = "14";
     private static final String D_WORD_WRAP = "false";
     private static final String D_AUTO_SELECT = "always";
-    private static final String D_DELIMS = "\\p{Punct}|\\s";
+    private static final String D_TOKENS = "\\w+";
     private static final String D_TREE_POS = "right";
     private static final String D_LOG_POS = "tab";
     private static final String D_PROMP_EXIT = "true";
@@ -63,7 +63,7 @@ public final class Controller {
 
     private static final Properties properties = new Properties();
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private static final SimpleObjectProperty<Pattern> delimPattern = new SimpleObjectProperty<>();
+    private static final SimpleObjectProperty<Pattern> tokenPattern = new SimpleObjectProperty<>();
 
     private static final String CONF_FNAME = System.getProperty("user.home") + File.separator + ".apeconfig";
     private static final String STYLE_FORMAT = "-fx-font-family: %s; -fx-font-size: %s;";
@@ -89,9 +89,9 @@ public final class Controller {
             if (fontSize < AppData.MIN_FONT_SIZE || fontSize > AppData.MAX_FONT_SIZE) {
                 properties.putIfAbsent(P_FONT_SIZE, D_FONT_SIZE);
             }
-            Controller.delimPattern.set(Pattern.compile(properties.getProperty(P_DELIMS), Pattern.UNICODE_CHARACTER_CLASS));
+            Controller.tokenPattern.set(Pattern.compile(properties.getProperty(P_TOKENS), Pattern.UNICODE_CHARACTER_CLASS));
         } catch (IOException | PatternSyntaxException e) {
-            Controller.delimPattern.set(Pattern.compile(D_DELIMS, Pattern.UNICODE_CHARACTER_CLASS));
+            Controller.tokenPattern.set(Pattern.compile(D_TOKENS, Pattern.UNICODE_CHARACTER_CLASS));
         }
 
         Controller.initTextArea();
@@ -123,7 +123,7 @@ public final class Controller {
         properties.setProperty(P_FONT_SIZE, D_FONT_SIZE);
         properties.setProperty(P_WORD_WRAP, D_WORD_WRAP);
         properties.setProperty(P_AUTO_SELECT, D_AUTO_SELECT);
-        properties.setProperty(P_DELIMS, D_DELIMS);
+        properties.setProperty(P_TOKENS, D_TOKENS);
         properties.setProperty(P_TREE_POS, D_TREE_POS);
         properties.setProperty(P_LOG_POS, D_LOG_POS);
         properties.setProperty(P_START_FILE, D_EMPTY);
@@ -171,13 +171,13 @@ public final class Controller {
         return properties.getProperty(P_AUTO_SELECT, D_AUTO_SELECT).compareTo("always") == 0;
     }
 
-    public static Pattern getDelimiterPattern() {
-        return Controller.delimPattern.get();
+    public static Pattern getTokenPattern() {
+        return Controller.tokenPattern.get();
     }
 
-    public static void setDelimitersPattern(@NotNull Pattern pattern) {
-        properties.setProperty(P_DELIMS, pattern.pattern());
-        Controller.delimPattern.set(pattern);
+    public static void setTokenPattern(final Pattern pattern) {
+        properties.setProperty(P_TOKENS, pattern.pattern());
+        Controller.tokenPattern.set(pattern);
     }
 
     public static boolean isWrap() {
@@ -243,7 +243,7 @@ public final class Controller {
         properties.setProperty(P_PROMPT_DEL, Boolean.toString(isPromptDel));
         properties.setProperty(P_PROMPT_EXIT, Boolean.toString(isPromptExit));
         properties.setProperty(P_START_FILE, fileName);
-        Controller.setDelimitersPattern(pattern);
+        Controller.setTokenPattern(pattern);
         Controller.updateStyleTextArea();
         Controller.flushChanges();
     }
@@ -283,18 +283,18 @@ public final class Controller {
         final int anchorPos = AppData.textArea.offsetToPosition(AppData.textArea.getAnchor(), TwoDimensional.Bias.Forward).getMinor();
         final int caretPos = AppData.textArea.offsetToPosition(AppData.textArea.getCaretPosition(), TwoDimensional.Bias.Forward).getMinor();
         final int offset = AppData.textArea.getCaretPosition() - AppData.textArea.getCaretColumn();
+
         AppData.textArea.selectLine();
         final String line = AppData.textArea.getSelectedText();
-        final Matcher matcher = Controller.delimPattern.get().matcher(line);
-        int validStart = 0, validEnd;
+        final Matcher matcher = Controller.tokenPattern.get().matcher(line);
+        int validStart = 0;
         while (matcher.find()) {
-            validEnd = matcher.start();
-            if (validEnd >= caretPos) {
-                AppData.textArea.selectRange(validStart + offset, validEnd + offset);
-                return;
+            if (matcher.start() <= anchorPos) {
+                validStart = matcher.start();
             }
-            if (matcher.end() <= anchorPos) {
-                validStart = matcher.end();
+            if (matcher.end() >= caretPos) {
+                AppData.textArea.selectRange(validStart + offset, matcher.end() + offset);
+                return;
             }
         }
         AppData.textArea.deselect();
@@ -373,10 +373,14 @@ public final class Controller {
 
     public static void exportProject(final File file, boolean onlySelected,
                                      boolean outputId, boolean outputDescription,
+                                     boolean ignoreInvalid, boolean trimDelims,
                                      int startLineNum) {
         final Task<Void> exportTask = new ExportProjectTask(
                 file, EXPORT_PROJ_TASK_NAME, onlySelected,
-                outputId, outputDescription, startLineNum);
+                outputId, outputDescription,
+                ignoreInvalid, trimDelims,
+                startLineNum
+        );
         exportTask.setOnSucceeded(workerStateEvent -> {
             AppData.exportPath.set(file.getAbsolutePath());
             workerStateEvent.consume();

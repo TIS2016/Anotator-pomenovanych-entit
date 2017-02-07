@@ -18,14 +18,15 @@ public class LogListView extends ListView<SimpleLogRecord> {
     private static final SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
 
     private final ObservableList<SimpleLogRecord> logItems = FXCollections.observableArrayList();
-
     private final Timeline logTransfer = new Timeline();
+    private final SimpleLogger simpleLogger;
 
     public static SimpleDateFormat getFormatter() {
         return LogListView.formatter;
     }
 
     public void clearLog() {
+        simpleLogger.clear();
         logItems.clear();
     }
 
@@ -42,7 +43,7 @@ public class LogListView extends ListView<SimpleLogRecord> {
     }
 
     public LogListView(final SimpleLogger simpleLogger) {
-        this.getStyleClass().add("log-view");
+        this.simpleLogger = simpleLogger;
         this.setEditable(false);
         this.setItems(logItems);
         logTransfer.getKeyFrames().add(new KeyFrame(Duration.seconds(1),  event -> {

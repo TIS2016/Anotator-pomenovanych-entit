@@ -19,7 +19,6 @@ public class Main extends Application {
             AppData.owner = primaryStage;
             Controller.init(this.getHostServices());
             Scene scene = new Scene(new MainLayout(), Controller.getWindowWidth(), Controller.getWindowHeight());
-            scene.getStylesheets().add(this.getClass().getResource("log-view.css").toExternalForm());
             primaryStage.setTitle("Ape v1.0.0");
             primaryStage.setScene(scene);
             scene.getWindow().setOnCloseRequest(windowEvent -> {

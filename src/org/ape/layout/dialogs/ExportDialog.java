@@ -59,9 +59,9 @@ public class ExportDialog extends Dialog {
 
             final CheckBox onlySelected = new CheckBox("Only selected");
 
-            final TextField delimiterField = new TextField();
-            delimiterField.setPromptText("Pattern");
-            delimiterField.textProperty().addListener(((observable, oldValue, newValue) -> {
+            final TextField tokenField = new TextField();
+            tokenField.setPromptText("Pattern");
+            tokenField.textProperty().addListener(((observable, oldValue, newValue) -> {
                 try {
                     if (newValue.isEmpty()) {
                         pattern.set(null);
@@ -72,11 +72,12 @@ public class ExportDialog extends Dialog {
                     pattern.set(null);
                 }
             }));
-            delimiterField.setText(Controller.getDelimiterPattern().pattern());
+            tokenField.setText(Controller.getTokenPattern().pattern());
 
             final CheckBox outputId = new CheckBox("Output id");
-
             final CheckBox outputDescription = new CheckBox("Output description");
+            final CheckBox trimDelmiters = new CheckBox("Trim delimiters");
+            final CheckBox ignoreInvalid = new CheckBox("Ignore invalid");
 
             final SimpleBooleanProperty invalidInt = new SimpleBooleanProperty();
             final TextField startFromLine = new TextField("1");
@@ -107,10 +108,11 @@ public class ExportDialog extends Dialog {
             final Button okBtn = (Button) exportPane.lookupButton(okButton);
             okBtn.disableProperty().bind(exportFile.isNull().or(pattern.isNull().or(invalidInt)));
             okBtn.setOnAction(actionEvent -> {
-                Controller.setDelimitersPattern(pattern.get());
+                Controller.setTokenPattern(pattern.get());
                 Controller.exportProject(
                         exportFile.get(), onlySelected.isSelected(),
                         outputId.isSelected(), outputDescription.isSelected(),
+                        ignoreInvalid.isSelected(), trimDelmiters.isSelected(),
                         Integer.valueOf(startFromLine.getText()));
                 actionEvent.consume();
             });
@@ -122,12 +124,15 @@ public class ExportDialog extends Dialog {
             this.add(new Label("Export file:"), 0, 0);
             this.add(selectFile, 1, 0);
             this.add(onlySelected, 1, 1);
-            this.add(new Label("Delimiters:"), 0, 2);
-            this.add(delimiterField, 1, 2);
+            this.add(new Label("Tokens:"), 0, 2);
+            this.add(tokenField, 1, 2);
+            this.add(new Label("Number lines from:"), 0, 3);
             this.add(startFromLine, 1, 3);
             this.add(outputId, 0, 4);
             this.add(outputDescription, 1, 4);
-            this.add(statusLabel, 1, 5);
+            this.add(ignoreInvalid, 0, 5);
+            this.add(trimDelmiters, 1, 5);
+            this.add(statusLabel, 1, 6);
         }
     }
 }

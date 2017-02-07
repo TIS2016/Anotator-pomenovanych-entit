@@ -57,10 +57,9 @@ implements Serializable {
             valueJoiner.add(String.valueOf(lineNum));
         }
 
-        if (outputDescription) { //to be consistent
-            fieldJoiner.add("");
-        }
         fieldJoiner.add(valueJoiner.toString());
+        fieldJoiner.add(""); //to be consistent description...
+
         return fieldJoiner.toString();
     }
 }

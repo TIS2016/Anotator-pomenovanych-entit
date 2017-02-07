@@ -32,4 +32,8 @@ public class SimpleLogger {
     public void drainTo(Collection<? super SimpleLogRecord> collection) {
         log.drainTo(collection);
     }
+
+    public void clear() {
+        log.clear();
+    }
 }

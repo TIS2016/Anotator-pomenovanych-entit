@@ -252,23 +252,29 @@ class WriteProjectTask extends FileTask<Integer> {
 
 class ExportProjectTask extends FileTask<Void> {
 
+    private static final String ANNOT_DELIMITER = " ";
+
     private final HashMap<Integer, HashSet<SerializableDisTreeObj>> charPosAnnots = new HashMap<>();
     private final List<String> lines = AppData.textArea.getParagraphs()
             .stream()
             .map(Paragraph::getText)
             .collect(Collectors.toList());
     private int charPos, lineNum;
-    private final boolean onlySelected, outputId, outputDescription;
+    private final boolean onlySelected, outputId, outputDescription, ignoreInvalid, trimDelims;
 
     ExportProjectTask(File file, String name,
                       boolean onlySelected,
                       boolean outputId,
                       boolean outputDescription,
+                      boolean ignoreInvalid,
+                      boolean trimDelims,
                       int startLineNum) {
         super(file, name);
         this.onlySelected = onlySelected;
         this.outputId = outputId;
         this.outputDescription = outputDescription;
+        this.ignoreInvalid = ignoreInvalid;
+        this.trimDelims  = trimDelims;
         this.lineNum = startLineNum;
         new SerializableCatObj((CategoryObject) AppData.treeObjects
                 .stream()
@@ -288,15 +294,15 @@ class ExportProjectTask extends FileTask<Void> {
                 this.partitionLine(tokens, line);
                 this.updateProgress(i++, this.max);
             }
-            Set<SerializableDisTreeObj> invalidAnnotations = charPosAnnots.values()
+            final Set<SerializableDisTreeObj> invalidAnnotations = this.charPosAnnots.values()
                     .parallelStream()
                     .flatMap(Set::stream)
                     .filter(sdto -> (!this.onlySelected || sdto.isSelected()) && sdto.isInvalid())
                     .collect(Collectors.toSet());
-            if (invalidAnnotations.size() > 0) {
+            if (invalidAnnotations.size() > 0 && !this.ignoreInvalid) {
                 throw new Exception(
                         "Found " + invalidAnnotations.size() +
-                        " invalid annotations at following positions:\n" +
+                        " invalid annotation/s at following positions:\n" +
                                 invalidAnnotations.parallelStream()
                                         .map(SerializableDisTreeObj::toPosition)
                                         .collect(Collectors.joining(" "))
@@ -328,32 +334,36 @@ class ExportProjectTask extends FileTask<Void> {
         }
     }
 
-    private void partitionLine(List<Token> tokens, String line) {
-        final Matcher matcher = Controller.getDelimiterPattern().matcher(line);
-        int start = 0, end;
+    private void partitionLine(final List<Token> tokens, final String line) {
+        final Matcher matcher = Controller.getTokenPattern().matcher(line);
+        String delimiter;
+        int start, end = 0, lastEnd;
         while (matcher.find()) {
-            String delimiter = matcher.group();
-            int length = delimiter.length();
-            end = matcher.start();//line.indexOf(delimiter, start);
-            if (start < end) {
-                int startPos = this.charPos;
-                this.charPos += end - start;
-                this.setLineIndices(startPos, this.charPos);
-                tokens.add(new Token(startPos, this.lineNum++, line.substring(start, end)));
+            lastEnd = end;
+            start = matcher.start();
+            end = matcher.end();
+
+            delimiter = line.substring(lastEnd, start);
+            this.charPos += delimiter.length();
+            if (this.trimDelims) {
+                delimiter = delimiter.trim();
             }
-            start = end + length;
-            delimiter = delimiter.trim();
             if (!delimiter.isEmpty()) {
                 tokens.add(new Token(-1, this.lineNum++, delimiter));
             }
-            this.charPos += length;
-        }
-        end = line.length();
-        if (start < end) {
-            int startPos = this.charPos;
+
+            final int startPos = this.charPos;
             this.charPos += end - start;
             this.setLineIndices(startPos, this.charPos);
-            tokens.add(new Token(startPos, this.lineNum++, line.substring(start, end)));
+            tokens.add(new Token(startPos, this.lineNum++, matcher.group()));
+        }
+        delimiter = line.substring(end);
+        this.charPos += delimiter.length();
+        if (this.trimDelims) {
+            delimiter = delimiter.trim();
+        }
+        if (!delimiter.isEmpty()) {
+            tokens.add(new Token(-1, this.lineNum++, delimiter));
         }
         this.charPos++;
     }
@@ -362,14 +372,15 @@ class ExportProjectTask extends FileTask<Void> {
                                       Set<SerializableDisTreeObj> invalidAnnotations) throws IOException {
         long i = Math.floorDiv(this.max, 2);
         for (final Token token : tokens) {
-            bw.write(String.format("%d %s ", token.lineNum, token.data));
-            HashSet<SerializableDisTreeObj> annotations = charPosAnnots.get(token.charPos);
+            bw.write(token.lineNum + ANNOT_DELIMITER +  token.data + ANNOT_DELIMITER);
+            final HashSet<SerializableDisTreeObj> annotations = this.charPosAnnots.get(token.charPos);
             if (annotations != null) {
                 bw.write(annotations
                         .stream()
-                        .filter(SerializableDisTreeObj::isSelected)
+                        .filter(sdto -> (!this.onlySelected || sdto.isSelected()) && !invalidAnnotations.contains(sdto))
+                        //at this point, ignoreInvalid is always true, see call() method
                         .map(sdto -> sdto.toRecord(token.charPos, outputId, outputDescription))
-                        .collect(Collectors.joining(" ")));
+                        .collect(Collectors.joining(ANNOT_DELIMITER)));
             }
             bw.newLine();
             this.updateProgress(i++, this.max);
@@ -382,8 +393,10 @@ class ExportProjectTask extends FileTask<Void> {
         int charPos, lineNum;
         String data;
 
-        Token(int charPos, int lineNum,
-              String data) {
+        Token(int charPos,
+              int lineNum,
+              String data
+        ) {
             this.charPos = charPos;
             this.lineNum = lineNum;
             this.data = data;

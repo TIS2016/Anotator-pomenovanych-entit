@@ -32,7 +32,7 @@ implements Serializable {
                this.description.compareTo(((SerializableAnotObj) other).description) == 0;
     }
 
-    @Override  //B(,Id optional):TAG:urls -- may be empty:(desc optional)
+    @Override  //B(,Id optional):urls:(desc optional)
     public String toRecord(int start, boolean outputId, boolean outputDescription) {
         if (start != i) {
             return AppData.CONT_TAG + (outputId ? VALUE_DELIMItER + this.getId() : "");
@@ -55,7 +55,13 @@ implements Serializable {
         fieldJoiner.add(valueJoiner.toString());
 
         if (outputDescription) {
-            fieldJoiner.add(this.description);
+            fieldJoiner.add(
+                    this.description
+                    .replaceAll("\\\\n", "\\\\\\\\n") //escape \n literals with \\n
+                    .replaceAll("(\\r|\\n|\\r\\n)+", "\\\\n") //replace line breaks with literals
+            );
+        } else {
+            fieldJoiner.add("");
         }
 
         return fieldJoiner.toString();
