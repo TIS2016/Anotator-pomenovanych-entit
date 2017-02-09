@@ -1,6 +1,5 @@
 package org.ape.control;
 
-import com.sun.istack.internal.NotNull;
 import org.ape.annotations.treeObjects.TreeObject;
 import org.ape.layout.dialogs.ConfirmationAlert;
 import javafx.application.HostServices;
@@ -280,24 +279,35 @@ public final class Controller {
     }
 
     public static void adjustSelection() {
-        final int anchorPos = AppData.textArea.offsetToPosition(AppData.textArea.getAnchor(), TwoDimensional.Bias.Forward).getMinor();
-        final int caretPos = AppData.textArea.offsetToPosition(AppData.textArea.getCaretPosition(), TwoDimensional.Bias.Forward).getMinor();
+        int leftPos = AppData.textArea.offsetToPosition(AppData.textArea.getAnchor(), TwoDimensional.Bias.Forward).getMinor(); //assume left pos is anchor
+        int rightPos = AppData.textArea.offsetToPosition(AppData.textArea.getCaretPosition(), TwoDimensional.Bias.Forward).getMinor(); //assume right pos is caret
         final int offset = AppData.textArea.getCaretPosition() - AppData.textArea.getCaretColumn();
+
+        if (leftPos > rightPos) { //if line was selected left to right
+            int tmp = rightPos;
+            rightPos = leftPos;
+            leftPos = tmp;
+        }
 
         AppData.textArea.selectLine();
         final String line = AppData.textArea.getSelectedText();
         final Matcher matcher = Controller.tokenPattern.get().matcher(line);
-        int validStart = 0;
+        int validStart = -1, validEnd = -1;
         while (matcher.find()) {
-            if (matcher.start() <= anchorPos) {
+            if (matcher.start() <= leftPos || validStart == -1) {
                 validStart = matcher.start();
             }
-            if (matcher.end() >= caretPos) {
-                AppData.textArea.selectRange(validStart + offset, matcher.end() + offset);
+            validEnd = matcher.end();
+            if (validEnd >= rightPos) {
+                AppData.textArea.selectRange(validStart + offset, validEnd + offset);
                 return;
             }
         }
-        AppData.textArea.deselect();
+        if (validStart != -1 && validEnd != -1) {
+            AppData.textArea.selectRange(validStart + offset, validEnd + offset);
+        } else {
+            AppData.textArea.deselect();
+        }
     }
 
     public static void newProject() {

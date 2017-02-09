@@ -34,8 +34,9 @@ implements Serializable {
 
     @Override  //B(,Id optional):urls:(desc optional)
     public String toRecord(int start, boolean outputId, boolean outputDescription) {
+        final String categoryTag = ((SerializableCatObj) this.getParent()).getTag();
         if (start != i) {
-            return AppData.CONT_TAG + (outputId ? VALUE_DELIMItER + this.getId() : "");
+            return AppData.CONT_TAG + (outputId ? VALUE_DELIMItER + this.getId() : "") + FIELD_DELIMITER + categoryTag;
         }
         final StringJoiner fieldJoiner = new StringJoiner(FIELD_DELIMITER);
         StringJoiner valueJoiner = new StringJoiner(VALUE_DELIMItER);
@@ -46,7 +47,7 @@ implements Serializable {
         }
         fieldJoiner.add(valueJoiner.toString());
 
-        fieldJoiner.add(((SerializableCatObj) this.getParent()).getTag());
+        fieldJoiner.add(categoryTag);
 
         valueJoiner = new StringJoiner(VALUE_DELIMItER);
         for (String link: links) {

@@ -32,10 +32,11 @@ implements Serializable {
 
     @Override
     public String toRecord(int start, boolean outputId, boolean outputDescription) {
-        if (start != i) {
-            return AppData.CONT_TAG + (outputId ? VALUE_DELIMItER + this.getId() : "");
-        }
         final SerializableAnotObj parent = (SerializableAnotObj) this.getParent();
+        final String categoryTag = ((SerializableCatObj) parent.getParent()).getTag();
+        if (start != i) {
+            return AppData.CONT_TAG + (outputId ? VALUE_DELIMItER + this.getId() : "") + FIELD_DELIMITER + categoryTag;
+        }
 
         final StringJoiner fieldJoiner = new StringJoiner(FIELD_DELIMITER);
         StringJoiner valueJoiner = new StringJoiner(VALUE_DELIMItER);
@@ -47,7 +48,7 @@ implements Serializable {
         fieldJoiner.add(valueJoiner.toString());
 
         valueJoiner = new StringJoiner(VALUE_DELIMItER);
-        valueJoiner.add(((SerializableCatObj) parent.getParent()).getTag());
+        valueJoiner.add(categoryTag);
         valueJoiner.add(AppData.REF_TAG);
 
         fieldJoiner.add(valueJoiner.toString());

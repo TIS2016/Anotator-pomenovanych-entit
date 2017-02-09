@@ -118,20 +118,19 @@ public class MainMenuBar extends MenuBar {
         }));
 
         final RadioMenuItem logDisplayNone = new RadioMenuItem("Non_e");
+        logDisplayNone.selectedProperty().addListener(((observable, oldValue, newValue) -> {
+            if (newValue) {
+                AppData.logListView.pause();
+            } else {
+                AppData.logListView.play();
+            }
+        }));
         logDisplayNone.setToggleGroup(logToggleGroup);
 
         final RadioMenuItem logDisplayWindow = new RadioMenuItem("_Window");
         logDisplayWindow.setToggleGroup(logToggleGroup);
 
         final Stage logWindow = new Stage(StageStyle.UTILITY);
-        logWindow.setOnHiding(windowEvent -> {
-            AppData.logListView.pause();
-            windowEvent.consume();
-        });
-        logWindow.setOnShowing(windowEvent -> {
-            AppData.logListView.play();
-            windowEvent.consume();
-        });
         logWindow.initOwner(AppData.owner);
         logWindow.setTitle("Action Log");
         logWindow.setOnCloseRequest(windowEvent -> {

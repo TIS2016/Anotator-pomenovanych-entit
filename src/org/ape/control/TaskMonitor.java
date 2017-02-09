@@ -13,7 +13,6 @@ import javafx.concurrent.Worker;
 
 public class TaskMonitor {
 
-    private final ReadOnlyObjectWrapper<FileTask> currentTask = new ReadOnlyObjectWrapper<>();
     private final ReadOnlyStringWrapper currentTaskName = new ReadOnlyStringWrapper();
     private final ReadOnlyDoubleWrapper currentTaskProgress = new ReadOnlyDoubleWrapper();
 
@@ -39,7 +38,6 @@ public class TaskMonitor {
             public void changed(ObservableValue<? extends Task.State> observableValue, Task.State oldValue, Task.State newValue) {
                 switch (newValue) {
                     case RUNNING:
-                        currentTask.set(task);
                         currentTaskProgress.unbind();
                         currentTaskProgress.set(task.progressProperty().get());
                         currentTaskProgress.bind(task.progressProperty());
