@@ -23,6 +23,7 @@ import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.stage.Popup;
+import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.*;
 import org.fxmisc.richtext.model.TwoDimensional;
 import org.fxmisc.wellbehaved.event.EventPattern;
@@ -47,8 +48,7 @@ public class MainLayout extends VBox {
 
         final SplitPane slaveSplitPane = new SplitPane();
 
-        //see org.ape.layout.VirtualizedScrollPane2 source file for explanation
-        VirtualizedScrollPane2<StyledTextArea> scrollPane = new VirtualizedScrollPane2<>(textArea);
+        VirtualizedScrollPane<StyledTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
         slaveSplitPane.setOrientation(Orientation.VERTICAL);
         slaveSplitPane.getItems().addAll(scrollPane);
 
@@ -243,8 +243,8 @@ public class MainLayout extends VBox {
             final Point2D position = mouseEvent.getScreenPosition();
             final ColorObject colorObject = AppData.colorObjects.get(mouseEvent.getCharacterIndex());
             if (colorObject != null) {
-                AtomicIntegerArray counts = new AtomicIntegerArray(4);
-                colorObject.getAllDisplayedTreeObjects().parallelStream().forEach(dto -> {
+                final AtomicIntegerArray counts = new AtomicIntegerArray(4);
+                colorObject.getAllDisplayedTreeObjects().forEach(dto -> {
                     if (dto instanceof AnnotationObject) {
                         if (dto.isSelected())
                             counts.addAndGet(0, 1);

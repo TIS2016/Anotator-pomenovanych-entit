@@ -40,7 +40,7 @@ public class AnnotationTree extends TreeView<TreeObject<?>> {
                     item.setSelected(true);
                     item.setExpanded(true);
                 } else if (c.wasRemoved()) {
-                    c.getRemoved().parallelStream()
+                    c.getRemoved().stream()
                             .filter(to -> to.getStatus() != TreeObject.Status.UPDATE)
                             .forEach(TreeObject::onDelete);
                     internalTreeItems.removeIf(treeItem -> c.getRemoved().contains(treeItem.getValue()));

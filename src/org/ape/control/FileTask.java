@@ -287,7 +287,7 @@ class ExportProjectTask extends FileTask<Void> {
     @Override
     protected Void call() throws Exception {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-            List<Token> tokens = new ArrayList<>();
+            final List<Token> tokens = new ArrayList<>();
             this.charPos = 0;
             long i = 0;
             for (String line : lines) {
@@ -303,7 +303,7 @@ class ExportProjectTask extends FileTask<Void> {
                 throw new Exception(
                         "Found " + invalidAnnotations.size() +
                         " invalid annotation/s at following positions:\n" +
-                                invalidAnnotations.parallelStream()
+                                invalidAnnotations.stream()
                                         .map(SerializableDisTreeObj::toPosition)
                                         .collect(Collectors.joining(" "))
                 );

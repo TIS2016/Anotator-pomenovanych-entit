@@ -42,7 +42,7 @@ public final class Controller {
     private static final String D_FONT_SIZE = "14";
     private static final String D_WORD_WRAP = "false";
     private static final String D_AUTO_SELECT = "always";
-    private static final String D_TOKENS = "\\w+";
+    private static final String D_TOKENS = "[^\\s]+";
     private static final String D_TREE_POS = "right";
     private static final String D_LOG_POS = "tab";
     private static final String D_PROMP_EXIT = "true";
